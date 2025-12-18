@@ -3,3 +3,6 @@ node_modules/
 
 # settings
 .DS_Store
+
+# envs
+.env
