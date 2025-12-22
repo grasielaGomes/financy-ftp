@@ -1,8 +1,6 @@
 import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 import cors from '@fastify/cors'
-import { createYoga, maskError } from 'graphql-yoga'
-import { GraphQLError } from 'graphql'
-import { AppError } from './shared/errors/AppError'
+import { createYoga } from 'graphql-yoga'
 
 import { env } from './env'
 import { schema } from './graphql/schema'
@@ -19,20 +17,13 @@ const yoga = createYoga<{
   graphqlEndpoint: '/graphql',
   context: buildContext,
 
-  maskedErrors:
-    env.NODE_ENV === 'production'
-      ? {
-          maskError(error, message, isDev) {
-            // Preserve "expected" errors (AppError / GraphQLError) with extensions
-            if (error instanceof GraphQLError) return error
-            if (error instanceof AppError) return toGraphQLError(error)
+  maskedErrors: {
+    maskError(error) {
+      return toGraphQLError(error)
+    },
+  },
 
-            // For unexpected errors, keep them masked
-            return maskError(error, message, isDev)
-          },
-        }
-      : false, // In dev, show full errors + extensions (best DX)
-
+  // Optional: integrate Yoga logs with Fastify logger
   logging: {
     debug: (...args) => args.forEach((a) => app.log.debug(a)),
     info: (...args) => args.forEach((a) => app.log.info(a)),
