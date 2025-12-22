@@ -10,6 +10,11 @@ const baseTypeDefs = /* GraphQL */ `
   type Query {
     health: String!
   }
+
+  # Base Mutation type is required because modules extend it.
+  type Mutation {
+    _empty: String
+  }
 `
 
 const baseResolvers = {
