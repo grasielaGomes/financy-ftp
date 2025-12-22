@@ -2,6 +2,8 @@ export const categoriesTypeDefs = /* GraphQL */ `
   type Category {
     id: ID!
     name: String!
+    createdAt: String!
+    updatedAt: String!
   }
 
   input CreateCategoryInput {
