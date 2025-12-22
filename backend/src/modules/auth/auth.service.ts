@@ -6,10 +6,12 @@ import { signAccessToken } from '@/shared/auth/jwt'
 import { normalizeEmail, assertPasswordStrength } from './auth.utils'
 import type { PrismaClientLike } from '@/types/prisma'
 import { isPrismaKnownRequestError } from '@/shared/errors/isPrismaKnownRequestError'
+import { parseOrThrow } from '@/shared/validation/zod'
+import { conflict, unauthenticated } from '@/shared/errors/errors'
 
 const signUpInputSchema = z.object({
   email: z.email(),
-  password: z.string().min(6),
+  password: z.string().min(6, 'Password must be at least 6 characters.'),
 })
 
 const signInInputSchema = z.object({
@@ -21,7 +23,7 @@ const SALT_ROUNDS = 10
 
 export const authService = {
   signUp: async (prisma: PrismaClientLike, input: unknown) => {
-    const { email, password } = signUpInputSchema.parse(input)
+    const { email, password } = parseOrThrow(signUpInputSchema, input)
 
     const normalizedEmail = normalizeEmail(email)
     assertPasswordStrength(password)
@@ -42,10 +44,7 @@ export const authService = {
     } catch (err: unknown) {
       // Unique constraint failed (e.g. email already exists)
       if (isPrismaKnownRequestError(err) && err.code === 'P2002') {
-        throw new AppError('Email is already in use.', {
-          code: 'CONFLICT',
-          httpStatus: 409,
-        })
+        throw conflict('Email is already in use.')
       }
 
       throw err
@@ -53,7 +52,7 @@ export const authService = {
   },
 
   signIn: async (prisma: PrismaClientLike, input: unknown) => {
-    const { email, password } = signInInputSchema.parse(input)
+    const { email, password } = parseOrThrow(signInInputSchema, input)
 
     const normalizedEmail = normalizeEmail(email)
 
@@ -62,21 +61,11 @@ export const authService = {
       select: { id: true, email: true, passwordHash: true },
     })
 
-    if (!user) {
-      throw new AppError('Invalid credentials.', {
-        code: 'UNAUTHENTICATED',
-        httpStatus: 401,
-      })
-    }
+    if (!user) throw unauthenticated('Invalid credentials.')
 
     const isValid = await bcrypt.compare(password, user.passwordHash)
 
-    if (!isValid) {
-      throw new AppError('Invalid credentials.', {
-        code: 'UNAUTHENTICATED',
-        httpStatus: 401,
-      })
-    }
+    if (!isValid) throw unauthenticated('Invalid credentials.')
 
     const accessToken = signAccessToken(user.id)
 
