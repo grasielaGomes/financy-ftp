@@ -1,21 +1,23 @@
 import type { GraphQLContext } from '@/graphql/context'
+import { requireUser } from '@/shared/auth/requireUser'
+import { authService } from './auth.service'
+
+type SignUpArgs = { input: { email: string; password: string } }
+type SignInArgs = { input: { email: string; password: string } }
 
 export const authResolvers = {
   Query: {
-    me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
-      // TODO: Implement after Prisma models are ready
-      if (!ctx.userId) return null
-      return { id: ctx.userId, email: 'TODO' }
+    me: async (_parent: unknown, _args: unknown, ctx: GraphQLContext) => {
+      const userId = requireUser(ctx)
+      return authService.me(ctx.prisma, userId)
     },
   },
   Mutation: {
-    signUp: async (_: unknown, __: unknown) => {
-      // TODO: Implement (hash password, create user, return token)
-      throw new Error('Not implemented')
+    signUp: async (_parent: unknown, args: SignUpArgs, ctx: GraphQLContext) => {
+      return authService.signUp(ctx.prisma, args.input)
     },
-    signIn: async (_: unknown, __: unknown) => {
-      // TODO: Implement (verify password, return token)
-      throw new Error('Not implemented')
+    signIn: async (_parent: unknown, args: SignInArgs, ctx: GraphQLContext) => {
+      return authService.signIn(ctx.prisma, args.input)
     },
   },
 }
