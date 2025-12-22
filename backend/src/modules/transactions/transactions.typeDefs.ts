@@ -9,13 +9,17 @@ export const transactionsTypeDefs = /* GraphQL */ `
     title: String!
     amount: Float!
     type: TransactionType!
-    categoryId: ID
+    occurredAt: String!
+    createdAt: String!
+    updatedAt: String!
+    category: Category
   }
 
   input CreateTransactionInput {
     title: String!
     amount: Float!
     type: TransactionType!
+    occurredAt: String
     categoryId: ID
   }
 
@@ -24,6 +28,7 @@ export const transactionsTypeDefs = /* GraphQL */ `
     title: String
     amount: Float
     type: TransactionType
+    occurredAt: String
     categoryId: ID
   }
 
