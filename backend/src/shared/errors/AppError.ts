@@ -1,11 +1,13 @@
+import type { ErrorCode } from './errorCodes'
+
 export type AppErrorOptions = {
-  code: string
+  code: ErrorCode
   httpStatus?: number
   details?: unknown
 }
 
 export class AppError extends Error {
-  public readonly code: string
+  public readonly code: ErrorCode
   public readonly httpStatus: number
   public readonly details?: unknown
 
