@@ -11,7 +11,6 @@ export type JwtUser = {
 }
 
 export const signAccessToken = (userId: string) => {
-  // Using JWT "subject" keeps payload minimal and standard
   return jwt.sign({ subject: userId }, env.JWT_SECRET, {
     expiresIn: '7d',
   })

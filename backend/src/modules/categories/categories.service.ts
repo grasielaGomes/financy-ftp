@@ -56,7 +56,6 @@ export const categoriesService = {
 
       return mapCategory(created)
     } catch (err: unknown) {
-      // @@unique([userId, name])
       if (isPrismaKnownRequestError(err) && err.code === 'P2002') {
         throw conflict('Category name already exists.')
       }
@@ -80,9 +79,7 @@ export const categoriesService = {
         },
       })
 
-      // Ownership guard (multi-tenant)
       if (updated.userId !== userId) {
-        // We intentionally do not reveal existence across tenants
         throw notFound('Category not found.')
       }
 
@@ -92,7 +89,6 @@ export const categoriesService = {
         if (err.code === 'P2002') {
           throw conflict('Category name already exists.')
         }
-        // Record not found (update/delete)
         if (err.code === 'P2025') {
           throw notFound('Category not found.')
         }

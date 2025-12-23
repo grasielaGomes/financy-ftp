@@ -41,7 +41,6 @@ export const authService = {
       const accessToken = signAccessToken(user.id)
       return { accessToken, user }
     } catch (err: unknown) {
-      // Unique constraint failed (e.g. email already exists)
       if (isPrismaKnownRequestError(err) && err.code === 'P2002') {
         throw conflict('Email is already in use.')
       }

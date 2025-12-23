@@ -29,8 +29,6 @@ export const buildContext = async (
     try {
       userId = verifyAccessToken(token).userId
     } catch {
-      // If the token is invalid/expired, we keep userId null.
-      // Resolvers that require auth will enforce it via `requireUser`.
       userId = null
     }
   }

@@ -23,7 +23,6 @@ const yoga = createYoga<{
     },
   },
 
-  // Optional: integrate Yoga logs with Fastify logger
   logging: {
     debug: (...args) => args.forEach((a) => app.log.debug(a)),
     info: (...args) => args.forEach((a) => app.log.info(a)),
