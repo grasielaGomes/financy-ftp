@@ -1,13 +1,12 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
-import { AppError } from '@/shared/errors/AppError'
 import { signAccessToken } from '@/shared/auth/jwt'
-import { normalizeEmail, assertPasswordStrength } from './auth.utils'
 import type { PrismaClientLike } from '@/types/prisma'
 import { isPrismaKnownRequestError } from '@/shared/errors/isPrismaKnownRequestError'
 import { parseOrThrow } from '@/shared/validation/zod'
 import { conflict, unauthenticated } from '@/shared/errors/errors'
+import { normalizeEmail, assertPasswordStrength } from './auth.utils'
 
 const signUpInputSchema = z.object({
   email: z.email(),
