@@ -9,16 +9,16 @@ A full-stack personal finance management application composed of:
 
 ### Core features (Backend + Frontend)
 
-- [ ] Users can sign up and sign in
+- [x] Users can sign up and sign in
 - [ ] Users can only manage their own transactions and categories (multi-tenant)
 - [ ] Create a transaction
 - [ ] Edit a transaction
 - [ ] Delete a transaction
 - [ ] List all transactions
-- [ ] Create a category
-- [ ] Edit a category
-- [ ] Delete a category
-- [ ] List all categories
+- [x] Create a category
+- [x] Edit a category
+- [x] Delete a category
+- [x] List all categories
 
 ### Frontend rules
 
