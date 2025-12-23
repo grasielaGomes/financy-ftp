@@ -2,8 +2,7 @@ import type { GraphQLContext } from '@/graphql/context'
 import { requireUser } from '@/shared/auth/requireUser'
 import { authService } from './auth.service'
 
-type SignUpArgs = { input: { email: string; password: string } }
-type SignInArgs = { input: { email: string; password: string } }
+type AuthArgs = { input: { email: string; password: string } }
 
 export const authResolvers = {
   Query: {
@@ -13,10 +12,10 @@ export const authResolvers = {
     },
   },
   Mutation: {
-    signUp: async (_parent: unknown, args: SignUpArgs, ctx: GraphQLContext) => {
+    signUp: async (_parent: unknown, args: AuthArgs, ctx: GraphQLContext) => {
       return authService.signUp(ctx.prisma, args.input)
     },
-    signIn: async (_parent: unknown, args: SignInArgs, ctx: GraphQLContext) => {
+    signIn: async (_parent: unknown, args: AuthArgs, ctx: GraphQLContext) => {
       return authService.signIn(ctx.prisma, args.input)
     },
   },
