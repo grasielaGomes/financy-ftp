@@ -33,14 +33,14 @@ A full-stack personal finance management application composed of:
 
 ### Backend rules
 
-- [ ] Built with **TypeScript + GraphQL + Prisma**
-- [ ] Uses **SQLite** (Postgres is allowed as an alternative)
-- [ ] CORS is enabled
-- [ ] `backend/.env.example` exists with:
+- [x] Built with **TypeScript + GraphQL + Prisma**
+- [x] Uses **SQLite** (Postgres is allowed as an alternative)
+- [x] CORS is enabled
+- [x] `backend/.env.example` exists with:
 
-  - [ ] `JWT_SECRET=`
-  - [ ] `DATABASE_URL=`
-  - [ ] Any additional env vars are also documented
+  - [x] `JWT_SECRET=`
+  - [x] `DATABASE_URL=`
+  - [x] Any additional env vars are also documented
 
 ## Getting Started
 
