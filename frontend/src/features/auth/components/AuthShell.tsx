@@ -1,3 +1,5 @@
+import { Card } from '@/components/ui/Card'
+import { Logo } from '@/components/ui/Logo'
 import type { ReactNode } from 'react'
 
 type AuthShellProps = {
@@ -9,15 +11,15 @@ type AuthShellProps = {
 export const AuthShell = ({ title, subtitle, children }: AuthShellProps) => {
   return (
     <div className="min-h-dvh w-full bg-background">
-      <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center px-4 py-10 sm:px-6">
-        <header className="mb-6 space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        </header>
-
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
-          {children}
-        </div>
+      <div className="mx-auto flex min-h-dvh w-full max-w-[448px] flex-col justify-center py-10 gap-8 items-center">
+        <Logo />
+        <Card className="p-8 w-full ">
+          <header className="flex flex-col items-center mb-8">
+            <h1 className="text-xl font-bold text-gray-800">{title}</h1>
+            <p className="text-md text-gray-600">{subtitle}</p>
+          </header>
+          <>{children}</>
+        </Card>
       </div>
     </div>
   )
