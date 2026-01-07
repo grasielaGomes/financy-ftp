@@ -57,9 +57,7 @@ export const PasswordField = <TFieldValues extends FieldValues>({
             />
           </FormControl>
 
-          {description ? (
-            <FormDescription>{description}</FormDescription>
-          ) : null}
+          {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>
       )}
