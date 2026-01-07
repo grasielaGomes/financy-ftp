@@ -1,17 +1,8 @@
-import { useState } from 'react'
-import { useMutation } from '@apollo/client/react'
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Mail, Lock, Eye, EyeClosed, UserRoundPlus } from 'lucide-react'
-import { toast } from 'sonner'
+import { Mail, UserRoundPlus } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { Separator } from '@/components/ui/Separator'
 import { InputWithIcon } from '@/components/ui/InputWithIcon'
-import { setToken } from '@/lib/storage/token'
-
 import {
   Form,
   FormField,
@@ -21,16 +12,9 @@ import {
   FormMessage,
 } from '@/components/ui/Form'
 
-import { SIGN_IN_MUTATION } from '../auth.gql'
-import type { SignInResult, SignInVariables } from '../auth.types'
-
-const schema = z.object({
-  email: z.email('Enter a valid email.'),
-  password: z.string().min(1, 'Password is required.'),
-  remember: z.boolean().optional(),
-})
-
-type FormValues = z.infer<typeof schema>
+import { useLoginForm } from '../hooks/useLoginForm'
+import { PasswordField } from './PasswordField'
+import { AuthFormFooter } from './AuthFormFooter'
 
 type LoginFormProps = {
   onSwitchToSignUp: () => void
@@ -38,35 +22,8 @@ type LoginFormProps = {
 }
 
 export const LoginForm = ({ onSwitchToSignUp, onLoggedIn }: LoginFormProps) => {
-  const [showPassword, setShowPassword] = useState(false)
-
-  const [signIn, { loading }] = useMutation<SignInResult, SignInVariables>(
-    SIGN_IN_MUTATION
-  )
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '', remember: true },
-  })
-
-  const onSubmit = async (values: FormValues) => {
-    try {
-      const { data } = await signIn({
-        variables: {
-          input: { email: values.email, password: values.password },
-        },
-      })
-
-      const token = data?.signIn.accessToken
-      if (!token) throw new Error('Missing token')
-
-      setToken(token)
-      toast.success('Logged in successfully.')
-      onLoggedIn?.()
-    } catch (err: any) {
-      toast.error(err?.message ?? 'Unable to sign in.')
-    }
-  }
+  const { form, loading, showPassword, toggleShowPassword, onSubmit } =
+    useLoginForm({ onLoggedIn })
 
   return (
     <Form {...form}>
@@ -94,32 +51,12 @@ export const LoginForm = ({ onSwitchToSignUp, onLoggedIn }: LoginFormProps) => {
           )}
         />
 
-        <FormField
+        <PasswordField
           control={form.control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Senha</FormLabel>
-              <FormControl>
-                <InputWithIcon
-                  {...field}
-                  id={field.name}
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Digite sua senha"
-                  autoComplete="current-password"
-                  leftIcon={<Lock size={16} />}
-                  rightIcon={
-                    showPassword ? <Eye size={16} /> : <EyeClosed size={16} />
-                  }
-                  rightIconAriaLabel={
-                    showPassword ? 'Hide password' : 'Show password'
-                  }
-                  onRightIconClick={() => setShowPassword((v) => !v)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          showPassword={showPassword}
+          onToggleShowPassword={toggleShowPassword}
+          autoComplete="current-password"
         />
 
         <div className="flex items-center justify-between gap-3">
@@ -152,26 +89,12 @@ export const LoginForm = ({ onSwitchToSignUp, onLoggedIn }: LoginFormProps) => {
           Entrar
         </Button>
 
-        <div className="flex items-center gap-3 py-1">
-          <Separator className="flex-1" />
-          <span className="text-sm text-gray-500">ou</span>
-          <Separator className="flex-1" />
-        </div>
-
-        <p className="text-center text-sm text-gray-600">
-          Ainda não tem uma conta?
-        </p>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="md"
-          className="w-full"
-          onClick={onSwitchToSignUp}
-        >
-          <UserRoundPlus size={18} />
-          Criar conta
-        </Button>
+        <AuthFormFooter
+          question="Ainda não tem uma conta?"
+          actionLabel="Criar conta"
+          actionIcon={<UserRoundPlus size={18} />}
+          onActionClick={onSwitchToSignUp}
+        />
       </form>
     </Form>
   )
