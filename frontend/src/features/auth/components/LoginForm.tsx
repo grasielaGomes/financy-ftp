@@ -109,7 +109,7 @@ export const LoginForm = ({ onSwitchToSignUp, onLoggedIn }: LoginFormProps) => {
                   autoComplete="current-password"
                   leftIcon={<Lock size={16} />}
                   rightIcon={
-                    showPassword ? <EyeClosed size={16} /> : <Eye size={16} />
+                    showPassword ? <Eye size={16} /> : <EyeClosed size={16} />
                   }
                   rightIconAriaLabel={
                     showPassword ? 'Hide password' : 'Show password'
@@ -146,7 +146,7 @@ export const LoginForm = ({ onSwitchToSignUp, onLoggedIn }: LoginFormProps) => {
           type="submit"
           variant="primary"
           size="md"
-          className="w-full"
+          className="w-full mt-2"
           disabled={loading}
         >
           Entrar
