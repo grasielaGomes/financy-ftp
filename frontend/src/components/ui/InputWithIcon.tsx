@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+//TODO: criar cn conforme caminho
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/Input'
 
@@ -27,7 +28,7 @@ export function InputWithIcon({
   const hasRight = !!rightIcon
   const rightIsButton = hasRight && typeof onRightIconClick === 'function'
 
-  const isError = isTruthyAriaInvalid((props as any)['aria-invalid'])
+  const isError = isTruthyAriaInvalid(props['aria-invalid'])
 
   const currentValue =
     value ?? (defaultValue as string | number | readonly string[] | undefined)
