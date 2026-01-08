@@ -2,6 +2,7 @@ export const authTypeDefs = /* GraphQL */ `
   type User {
     id: ID!
     email: String!
+    fullName: String!
   }
 
   type AuthPayload {
@@ -12,6 +13,7 @@ export const authTypeDefs = /* GraphQL */ `
   input SignUpInput {
     email: String!
     password: String!
+    fullName: String!
   }
 
   input SignInInput {
