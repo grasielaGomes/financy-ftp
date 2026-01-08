@@ -11,6 +11,7 @@ import { normalizeEmail, assertPasswordStrength } from './auth.utils'
 const signUpInputSchema = z.object({
   email: z.email(),
   password: z.string().min(6, 'Password must be at least 6 characters.'),
+  fullName: z.string().trim().min(1, 'Full name is required.'),
 })
 
 const signInInputSchema = z.object({
@@ -22,7 +23,7 @@ const SALT_ROUNDS = 10
 
 export const authService = {
   signUp: async (prisma: PrismaClientLike, input: unknown) => {
-    const { email, password } = parseOrThrow(signUpInputSchema, input)
+    const { email, password, fullName } = parseOrThrow(signUpInputSchema, input)
 
     const normalizedEmail = normalizeEmail(email)
     assertPasswordStrength(password)
@@ -34,8 +35,9 @@ export const authService = {
         data: {
           email: normalizedEmail,
           passwordHash,
+          fullName,
         },
-        select: { id: true, email: true },
+        select: { id: true, email: true, fullName: true },
       })
 
       const accessToken = signAccessToken(user.id)
@@ -76,7 +78,7 @@ export const authService = {
   me: async (prisma: PrismaClientLike, userId: string) => {
     return prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, fullName: true },
     })
   },
 }
