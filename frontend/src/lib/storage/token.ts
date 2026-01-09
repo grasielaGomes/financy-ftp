@@ -1,27 +1,33 @@
-const TOKEN_KEY = 'auth_token'
+import { useSyncExternalStore } from 'react'
 
-const isBrowser = () => typeof window !== 'undefined'
+const TOKEN_KEY = 'financy:token'
 
-export const getToken = () => {
-  if (!isBrowser()) {
-    return null
-  }
+type Listener = () => void
+const listeners = new Set<Listener>()
 
-  try {
-    return window.localStorage.getItem(TOKEN_KEY)
-  } catch {
-    return null
-  }
+const emit = () => {
+  for (const l of listeners) l()
+}
+
+export const getToken = (): string | null => {
+  return localStorage.getItem(TOKEN_KEY)
 }
 
 export const setToken = (token: string) => {
-  if (!isBrowser()) {
-    return
-  }
+  localStorage.setItem(TOKEN_KEY, token)
+  emit()
+}
 
-  try {
-    window.localStorage.setItem(TOKEN_KEY, token)
-  } catch {
-    return null
-  }
+export const clearToken = () => {
+  localStorage.removeItem(TOKEN_KEY)
+  emit()
+}
+
+export const subscribeToken = (listener: Listener) => {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+export const useToken = () => {
+  return useSyncExternalStore(subscribeToken, getToken, () => null)
 }
