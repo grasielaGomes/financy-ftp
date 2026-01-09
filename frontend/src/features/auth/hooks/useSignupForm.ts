@@ -5,8 +5,12 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { SIGN_UP_MUTATION } from '../auth.gql'
-import type { SignUpInput, SignUpResult, SignUpVariables } from '../auth.types'
+import { SIGN_UP_MUTATION } from '@/features/auth/auth.gql'
+import type {
+  SignUpInput,
+  SignUpResult,
+  SignUpVariables,
+} from '@/features/auth/auth.types'
 
 import { assertPresent } from '@/lib/assert'
 import { setToken } from '@/lib/storage/token'
@@ -60,6 +64,7 @@ export const useSignupForm = ({ onSignedUp }: UseSignupFormParams = {}) => {
 
       setToken(token)
       showSuccessToast('Conta criada com sucesso.')
+
       form.reset()
       setShowPassword(false)
 
