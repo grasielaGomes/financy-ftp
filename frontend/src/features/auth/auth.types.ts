@@ -6,6 +6,7 @@ export type SignInInput = {
 export type SignUpInput = {
   email: string
   password: string
+  fullName: string
 }
 
 export type AuthUser = {
