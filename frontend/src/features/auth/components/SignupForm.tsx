@@ -79,7 +79,11 @@ export const SignupForm = ({
           showPassword={showPassword}
           onToggleShowPassword={toggleShowPassword}
           autoComplete="new-password"
-          description="A senha deve ter no mínimo 8 caracteres"
+          description={
+            form.formState.errors.password
+              ? undefined
+              : 'A senha deve ter no mínimo 8 caracteres'
+          }
         />
 
         <Button
