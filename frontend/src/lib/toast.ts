@@ -1,8 +1,13 @@
 import { toast } from 'sonner'
-import { getErrorMessage } from '@/lib/graphql/error'
+import { getErrorMessage, getFirstGraphQLError } from '@/lib/graphql/error'
 
 export const showErrorToast = (err: unknown, fallback?: string) => {
-  toast.error(fallback ?? getErrorMessage(err))
+  const isGraphQLError = !!getFirstGraphQLError(err)
+  const message = isGraphQLError
+    ? getErrorMessage(err)
+    : fallback ?? getErrorMessage(err)
+
+  toast.error(message)
 }
 
 export const showSuccessToast = (message: string) => {
