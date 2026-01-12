@@ -1,3 +1,6 @@
 export * from './AuthPage'
 export * from './DashboardPage'
+export * from './TransactionsPage'
+export * from './CategoriesPage'
+export * from './ProfilePage'
 export * from './NotFoundPage'
