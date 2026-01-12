@@ -15,7 +15,7 @@ import type {
 import { assertPresent } from '@/lib/assert'
 import { setToken } from '@/lib/storage/token'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
-import { getErrorCode } from '@/lib/graphql/error'
+import { getErrorCode, getErrorMessage } from '@/lib/graphql/error'
 
 const schema = z.object({
   fullName: z.string().trim().min(1, 'Nome completo é obrigatório.'),
@@ -72,9 +72,10 @@ export const useSignupForm = ({ onSignedUp }: UseSignupFormParams = {}) => {
       onSignedUp?.()
     } catch (err) {
       const code = getErrorCode(err)
+      const message = getErrorMessage(err)
 
       if (code === 'CONFLICT') {
-        form.setError('email', { message: 'Este e-mail já está em uso.' })
+        form.setError('email', { message })
         return
       }
 
