@@ -23,3 +23,13 @@ export const SIGN_UP_MUTATION = gql`
     }
   }
 `
+
+export const ME_QUERY = gql`
+  query Me {
+    me {
+      id
+      email
+      fullName
+    }
+  }
+`
