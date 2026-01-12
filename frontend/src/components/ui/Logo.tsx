@@ -1,12 +1,12 @@
-import * as React from "react"
+import * as React from 'react'
 
-import logo from "@/assets/logo.png"
-import { cn } from "@/lib/utils"
+import logo from '@/assets/logo.svg'
+import { cn } from '@/lib/utils'
 
 const Logo = React.forwardRef<
   HTMLImageElement,
   React.ImgHTMLAttributes<HTMLImageElement>
->(({ className, alt = "Financy", ...props }, ref) => {
+>(({ className, alt = 'Financy', ...props }, ref) => {
   return (
     <img
       ref={ref}
@@ -14,11 +14,11 @@ const Logo = React.forwardRef<
       alt={alt}
       width={134}
       height={32}
-      className={cn("h-8 w-[134px]", className)}
+      className={cn('h-8 w-[134px]', className)}
       {...props}
     />
   )
 })
-Logo.displayName = "Logo"
+Logo.displayName = 'Logo'
 
 export { Logo }
