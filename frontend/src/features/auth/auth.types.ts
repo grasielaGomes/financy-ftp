@@ -35,3 +35,11 @@ export type SignInVariables = {
 export type SignUpVariables = {
   input: SignUpInput
 }
+
+export type MeResult = {
+  me: {
+    id: string
+    email: string
+    fullName: string
+  }
+}
