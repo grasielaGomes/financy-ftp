@@ -1,5 +1,6 @@
 import { CombinedGraphQLErrors } from '@apollo/client/errors'
 import type { GraphQLFormattedError } from 'graphql'
+import { errorMessages } from '@/lib/errors/messages'
 
 type GraphQLErrorExtensions = {
   code?: string
@@ -25,19 +26,11 @@ export const getErrorMessage = (err: unknown): string => {
   if (gqlError) {
     const code = (gqlError.extensions as GraphQLErrorExtensions | undefined)
       ?.code
-
-    switch (code) {
-      case 'UNAUTHENTICATED':
-        return 'E-mail ou senha inválidos.'
-      case 'CONFLICT':
-        return 'Este e-mail já está em uso.'
-      case 'BAD_REQUEST':
-        return 'Verifique os campos e tente novamente.'
-      default:
-        return gqlError.message || 'Ocorreu um erro.'
-    }
+    if (code && code in errorMessages) return errorMessages[code]
+    return gqlError.message || errorMessages.INTERNAL_SERVER_ERROR
   }
 
-  if (err instanceof Error) return err.message || 'Ocorreu um erro.'
-  return 'Ocorreu um erro.'
+  if (err instanceof Error)
+    return err.message || errorMessages.INTERNAL_SERVER_ERROR
+  return errorMessages.INTERNAL_SERVER_ERROR
 }
