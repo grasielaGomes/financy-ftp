@@ -11,7 +11,7 @@ import type { SignInResult, SignInVariables } from '@/features/auth/auth.types'
 import { assertPresent } from '@/lib/assert'
 import { setToken } from '@/lib/storage/token'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
-import { getErrorCode } from '@/lib/graphql/error'
+import { getErrorCode, getErrorMessage } from '@/lib/graphql/error'
 
 const schema = z.object({
   email: z.email('Digite um e-mail válido.'),
@@ -66,7 +66,9 @@ export const useLoginForm = ({ onLoggedIn }: UseLoginFormParams = {}) => {
       const code = getErrorCode(err)
 
       if (code === 'UNAUTHENTICATED') {
-        form.setError('email', { message: 'E-mail ou senha inválidos.' })
+        const message = getErrorMessage(err)
+        form.setError('email', { message })
+        form.setError('password', { message })
         return
       }
       showErrorToast(err, 'Não foi possível realizar o login.')
