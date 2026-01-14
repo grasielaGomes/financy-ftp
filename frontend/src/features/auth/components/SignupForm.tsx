@@ -1,16 +1,7 @@
 import { Mail, UserRound, LogIn } from 'lucide-react'
-
 import { Button } from '@/components/ui/Button'
-import { InputWithIcon } from '@/components/ui/InputWithIcon'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/Form'
-
+import { Form } from '@/components/ui/Form'
+import { RHFTextField } from '@/components/ui/RHFTextField'
 import { useSignupForm } from '../hooks/useSignupForm'
 import { PasswordField } from './PasswordField'
 import { AuthFormFooter } from './AuthFormFooter'
@@ -33,44 +24,22 @@ export const SignupForm = ({
         className="flex flex-col gap-4"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <RHFTextField
           control={form.control}
           name="fullName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome completo</FormLabel>
-              <FormControl>
-                <InputWithIcon
-                  {...field}
-                  id={field.name}
-                  placeholder="Seu nome completo"
-                  autoComplete="name"
-                  leftIcon={<UserRound size={16} />}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Nome completo"
+          placeholder="Seu nome completo"
+          autoComplete="name"
+          leftIcon={<UserRound size={16} />}
         />
 
-        <FormField
+        <RHFTextField
           control={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>E-mail</FormLabel>
-              <FormControl>
-                <InputWithIcon
-                  {...field}
-                  id={field.name}
-                  placeholder="mail@exemplo.com"
-                  autoComplete="email"
-                  leftIcon={<Mail size={16} />}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="E-mail"
+          placeholder="mail@exemplo.com"
+          autoComplete="email"
+          leftIcon={<Mail size={16} />}
         />
 
         <PasswordField
