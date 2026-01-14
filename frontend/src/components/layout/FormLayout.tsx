@@ -36,7 +36,7 @@ export const FormHeader = ({ children, title, subtitle }: FormHeaderProps) => {
   return (
     <header className="flex flex-col items-center mb-8">
       {children}
-      <h1 className="text-xl font-bold text-gray-800 capitalize">{title}</h1>
+      <h1 className="text-xl font-bold text-gray-800">{title}</h1>
       <p className="text-md text-gray-600">{subtitle}</p>
     </header>
   )
