@@ -11,7 +11,7 @@ type AvatarProps = {
 const sizeClasses: Record<AvatarSize, string> = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-10 w-10 text-sm',
-  lg: 'h-14 w-14 text-lg',
+  lg: 'h-16 w-16 text-2xl',
 }
 
 export const Avatar = ({ initials, size = 'md', className }: AvatarProps) => {
@@ -19,7 +19,7 @@ export const Avatar = ({ initials, size = 'md', className }: AvatarProps) => {
     <div
       aria-label="User avatar"
       className={cn(
-        'flex items-center justify-center rounded-full border bg-gray-100 font-semibold text-gray-700',
+        'flex items-center justify-center rounded-full bg-gray-300 font-medium text-gray-700',
         sizeClasses[size],
         className
       )}
