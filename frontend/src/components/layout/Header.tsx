@@ -52,7 +52,7 @@ export const Header = () => {
           type="button"
           aria-label="Go to profile"
           onClick={() => navigate('/profile')}
-          className="hidden md:block"
+          className="hidden cursor-pointer md:block"
         >
           <Avatar initials={initials} size="md" />
         </button>
