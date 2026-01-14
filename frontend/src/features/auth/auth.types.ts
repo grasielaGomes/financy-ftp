@@ -36,6 +36,22 @@ export type SignUpVariables = {
   input: SignUpInput
 }
 
+export type UpdateProfileInput = {
+  fullName: string
+}
+
+export type UpdateProfileVariables = {
+  input: UpdateProfileInput
+}
+
+export type UpdateProfileResult = {
+  updateProfile: {
+    id: string
+    email: string
+    fullName: string
+  }
+}
+
 export type MeResult = {
   me: {
     id: string
