@@ -13,6 +13,7 @@ import {
 
 import { cn } from '@/lib/utils'
 import { Label } from '@/components/ui/Label'
+import { fieldLabelClassName } from './fieldLabelStyles'
 
 const Form = FormProvider
 
@@ -126,12 +127,7 @@ function FormLabel({
     <Label
       data-slot="form-label"
       data-error={!!error}
-      className={cn(
-        'text-sm font-medium text-gray-700',
-        'group-focus-within:text-primary',
-        'data-[error=true]:text-danger',
-        className
-      )}
+      className={fieldLabelClassName}
       htmlFor={formItemId}
       {...props}
     />
