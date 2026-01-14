@@ -2,15 +2,8 @@ import { Mail, UserRoundPlus } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { InputWithIcon } from '@/components/ui/InputWithIcon'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/Form'
+import { Form, FormField } from '@/components/ui/Form'
+import { RHFTextField } from '@/components/ui/RHFTextField'
 
 import { useLoginForm } from '../hooks/useLoginForm'
 import { PasswordField } from './PasswordField'
@@ -31,24 +24,13 @@ export const LoginForm = ({ onSwitchToSignUp, onLoggedIn }: LoginFormProps) => {
         className="flex flex-col gap-4"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <FormField
+        <RHFTextField
           control={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>E-mail</FormLabel>
-              <FormControl>
-                <InputWithIcon
-                  {...field}
-                  id={field.name}
-                  placeholder="mail@exemplo.com"
-                  autoComplete="email"
-                  leftIcon={<Mail size={16} />}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="E-mail"
+          placeholder="mail@exemplo.com"
+          autoComplete="email"
+          leftIcon={<Mail size={16} />}
         />
 
         <PasswordField
