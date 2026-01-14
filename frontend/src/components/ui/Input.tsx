@@ -15,6 +15,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         'placeholder:text-gray-400',
         'focus-visible:border-input focus-visible:ring-border/50',
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+        'read-only:pointer-events-none read-only:cursor-not-allowed read-only:opacity-50',
         // File input styling (keep from shadcn baseline)
         'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-md file:font-medium file:text-gray-700',
         // Dark mode background (keep baseline)
