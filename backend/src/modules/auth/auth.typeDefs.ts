@@ -21,6 +21,10 @@ export const authTypeDefs = /* GraphQL */ `
     password: String!
   }
 
+  input UpdateProfileInput {
+    fullName: String!
+  }
+
   extend type Query {
     me: User
   }
@@ -28,5 +32,6 @@ export const authTypeDefs = /* GraphQL */ `
   extend type Mutation {
     signUp(input: SignUpInput!): AuthPayload!
     signIn(input: SignInInput!): AuthPayload!
+    updateProfile(input: UpdateProfileInput!): User!
   }
 `
