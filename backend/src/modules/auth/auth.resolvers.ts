@@ -18,5 +18,13 @@ export const authResolvers = {
     signIn: async (_parent: unknown, args: AuthArgs, ctx: GraphQLContext) => {
       return authService.signIn(ctx.prisma, args.input)
     },
+    updateProfile: async (
+      _parent: unknown,
+      args: { input: unknown },
+      ctx: GraphQLContext
+    ) => {
+      const userId = requireUser(ctx)
+      return authService.updateProfile(ctx.prisma, userId, args.input)
+    },
   },
 }
