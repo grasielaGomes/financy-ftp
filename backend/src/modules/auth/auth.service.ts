@@ -5,7 +5,7 @@ import { signAccessToken } from '@/shared/auth/jwt'
 import type { PrismaClientLike } from '@/types/prisma'
 import { isPrismaKnownRequestError } from '@/shared/errors/isPrismaKnownRequestError'
 import { parseOrThrow } from '@/shared/validation/zod'
-import { conflict, unauthenticated } from '@/shared/errors/errors'
+import { badRequest, conflict, unauthenticated } from '@/shared/errors/errors'
 import { normalizeEmail, assertPasswordStrength } from './auth.utils'
 
 const signUpInputSchema = z.object({
@@ -17,6 +17,10 @@ const signUpInputSchema = z.object({
 const signInInputSchema = z.object({
   email: z.email(),
   password: z.string().min(1),
+})
+
+const updateProfileInputSchema = z.object({
+  fullName: z.string().trim().min(1, 'Full name is required.'),
 })
 
 const SALT_ROUNDS = 10
@@ -73,6 +77,31 @@ export const authService = {
       accessToken,
       user: { id: user.id, email: user.email },
     }
+  },
+
+  updateProfile: async (
+    prisma: PrismaClientLike,
+    userId: string,
+    input: unknown
+  ) => {
+    const parsed = updateProfileInputSchema.safeParse(input)
+    if (!parsed.success) {
+      throw badRequest('Invalid input.')
+    }
+
+    const { fullName } = parsed.data
+
+    const user = await prisma.user
+      .update({
+        where: { id: userId },
+        data: { fullName },
+        select: { id: true, email: true, fullName: true },
+      })
+      .catch(() => null)
+
+    if (!user) throw unauthenticated('Invalid credentials.')
+
+    return user
   },
 
   me: async (prisma: PrismaClientLike, userId: string) => {
