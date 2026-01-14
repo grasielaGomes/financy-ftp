@@ -1,22 +1,51 @@
-import { useMemo } from 'react'
-import { Mail, UserRound, LogOut } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Mail, UserRound, LogOut, Save } from 'lucide-react'
+
 import { FormHeader, FormLayout } from '@/components/layout/FormLayout'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Separator } from '@/components/ui/Separator'
 import { TextField } from '@/components/ui/TextField'
+
 import { useMe } from '@/features/auth/hooks/useMe'
-import { getInitials } from '@/utils/format'
 import { useLogout } from '@/features/auth/hooks/useLogout'
+import { useUpdateProfile } from '@/features/auth/hooks/useUpdateProfile'
+
+import { getInitials } from '@/utils/format'
+import { showErrorToast } from '@/lib/toast'
 
 export const ProfilePage = () => {
   const { user, loading } = useMe()
   const { logout } = useLogout({ showToast: true })
+  const { updateProfile, loading: saving } = useUpdateProfile()
+
+  const [fullName, setFullName] = useState('')
+  const [touched, setTouched] = useState(false)
+
+  useEffect(() => {
+    setFullName(user?.fullName ?? '')
+    setTouched(false)
+  }, [user?.fullName])
 
   const initials = useMemo(
     () => (loading ? '…' : getInitials(user?.fullName)),
     [loading, user?.fullName]
   )
+
+  const originalFullName = (user?.fullName ?? '').trim()
+  const currentFullName = fullName.trim()
+
+  const isDirty = touched && currentFullName !== originalFullName
+  const canSave = !!currentFullName && isDirty && !saving
+
+  const handleSave = async () => {
+    try {
+      const ok = await updateProfile(currentFullName)
+      if (ok) setTouched(false)
+    } catch (err) {
+      showErrorToast(err, 'Não foi possível atualizar o perfil.')
+    }
+  }
 
   return (
     <FormLayout logo={null}>
@@ -33,8 +62,21 @@ export const ProfilePage = () => {
         <TextField
           id="fullName"
           label="Nome completo"
-          value={user?.fullName ?? ''}
+          value={fullName}
           leftIcon={<UserRound size={16} />}
+          placeholder="Seu nome completo"
+          errorMessage={
+            touched && !currentFullName
+              ? 'Nome completo é obrigatório.'
+              : undefined
+          }
+          inputProps={{
+            onChange: (e) => {
+              setTouched(true)
+              setFullName(e.target.value)
+            },
+            onBlur: () => setTouched(true),
+          }}
         />
 
         <TextField
@@ -44,7 +86,6 @@ export const ProfilePage = () => {
           readOnly
           leftIcon={<Mail size={16} />}
           hint="O e-mail não pode ser alterado"
-          disabled
         />
 
         <Button
@@ -52,8 +93,11 @@ export const ProfilePage = () => {
           variant="primary"
           size="md"
           className="w-full mt-2"
+          onClick={handleSave}
+          disabled={!canSave}
         >
-          Salvar alterações
+          <Save size={18} />
+          {saving ? 'Salvando...' : 'Salvar alterações'}
         </Button>
 
         <Button
@@ -62,8 +106,9 @@ export const ProfilePage = () => {
           size="md"
           className="w-full"
           onClick={logout}
+          disabled={saving}
         >
-          <LogOut size={18} color="var(--color-danger)" />
+          <LogOut size={18} className="text-danger" />
           Sair da conta
         </Button>
       </div>
