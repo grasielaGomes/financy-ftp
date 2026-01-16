@@ -4,6 +4,7 @@ import type { PrismaClientLike } from '@/types/prisma'
 import { parseOrThrow } from '@/shared/validation/zod'
 import { conflict, notFound } from '@/shared/errors/errors'
 import { isPrismaKnownRequestError } from '@/shared/errors/isPrismaKnownRequestError'
+import { CATEGORY_COLOR_KEYS, CATEGORY_ICON_KEYS } from '@financy/contracts'
 
 const createCategorySchema = z.object({
   name: z
@@ -11,6 +12,8 @@ const createCategorySchema = z.object({
     .trim()
     .min(1, 'Name is required.')
     .max(60, 'Name is too long.'),
+  iconKey: z.enum(CATEGORY_ICON_KEYS, { message: 'Invalid icon.' }),
+  colorKey: z.enum(CATEGORY_COLOR_KEYS, { message: 'Invalid color.' }),
 })
 
 const updateCategorySchema = z.object({
@@ -20,16 +23,32 @@ const updateCategorySchema = z.object({
     .trim()
     .min(1, 'Name is required.')
     .max(60, 'Name is too long.'),
+  iconKey: z.enum(CATEGORY_ICON_KEYS, { message: 'Invalid icon.' }),
+  colorKey: z.enum(CATEGORY_COLOR_KEYS, { message: 'Invalid color.' }),
 })
+
+const removeCategorySchema = z.object({ id: z.string().min(1) })
+
+const normalizeCategoryTitle = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
 
 const mapCategory = (c: {
   id: string
   name: string
+  iconKey: string
+  colorKey: string
   createdAt: Date
   updatedAt: Date
 }) => ({
   id: c.id,
   name: c.name,
+  iconKey: c.iconKey,
+  colorKey: c.colorKey,
   createdAt: c.createdAt.toISOString(),
   updatedAt: c.updatedAt.toISOString(),
 })
@@ -39,19 +58,37 @@ export const categoriesService = {
     const categories = await prisma.category.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        name: true,
+        iconKey: true,
+        colorKey: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
 
     return categories.map(mapCategory)
   },
 
   create: async (prisma: PrismaClientLike, userId: string, input: unknown) => {
-    const { name } = parseOrThrow(createCategorySchema, input)
+    const { name, iconKey, colorKey } = parseOrThrow(
+      createCategorySchema,
+      input
+    )
+    const normalizedTitle = normalizeCategoryTitle(name)
 
     try {
       const created = await prisma.category.create({
-        data: { name, userId },
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        data: { name, normalizedTitle, iconKey, colorKey, userId },
+        select: {
+          id: true,
+          name: true,
+          iconKey: true,
+          colorKey: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       })
 
       return mapCategory(created)
@@ -64,34 +101,40 @@ export const categoriesService = {
   },
 
   update: async (prisma: PrismaClientLike, userId: string, input: unknown) => {
-    const { id, name } = parseOrThrow(updateCategorySchema, input)
+    const { id, name, iconKey, colorKey } = parseOrThrow(
+      updateCategorySchema,
+      input
+    )
+    const normalizedTitle = normalizeCategoryTitle(name)
 
     try {
-      const updated = await prisma.category.update({
+      const result = await prisma.category.updateMany({
+        where: { id, userId }, // multi-tenant enforced here
+        data: { name, normalizedTitle, iconKey, colorKey },
+      })
+
+      if (result.count === 0) {
+        throw notFound('Category not found.')
+      }
+
+      const updated = await prisma.category.findUnique({
         where: { id },
-        data: { name },
         select: {
           id: true,
           name: true,
-          userId: true,
+          iconKey: true,
+          colorKey: true,
           createdAt: true,
           updatedAt: true,
         },
       })
 
-      if (updated.userId !== userId) {
-        throw notFound('Category not found.')
-      }
+      if (!updated) throw notFound('Category not found.')
 
       return mapCategory(updated)
     } catch (err: unknown) {
-      if (isPrismaKnownRequestError(err)) {
-        if (err.code === 'P2002') {
-          throw conflict('Category name already exists.')
-        }
-        if (err.code === 'P2025') {
-          throw notFound('Category not found.')
-        }
+      if (isPrismaKnownRequestError(err) && err.code === 'P2002') {
+        throw conflict('Category name already exists.')
       }
       throw err
     }
@@ -102,24 +145,19 @@ export const categoriesService = {
     userId: string,
     idInput: unknown
   ) => {
-    const schema = z.object({ id: z.string().min(1) })
-    const { id } = parseOrThrow(schema, { id: idInput })
+    const { id } = parseOrThrow(removeCategorySchema, { id: idInput })
 
     try {
-      const deleted = await prisma.category.delete({
-        where: { id },
-        select: { id: true, userId: true },
+      const result = await prisma.category.deleteMany({
+        where: { id, userId },
       })
 
-      if (deleted.userId !== userId) {
+      if (result.count === 0) {
         throw notFound('Category not found.')
       }
 
       return true
     } catch (err: unknown) {
-      if (isPrismaKnownRequestError(err) && err.code === 'P2025') {
-        throw notFound('Category not found.')
-      }
       throw err
     }
   },
