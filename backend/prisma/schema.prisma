@@ -27,6 +27,10 @@ model User {
 model Category {
   id           String        @id @default(cuid())
   name         String
+  normalizedTitle String
+  description     String?
+  iconKey         String
+  colorKey        String
 
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -36,7 +40,7 @@ model Category {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  @@unique([userId, name])
+  @@unique([userId, normalizedTitle])
   @@index([userId])
 }
 
