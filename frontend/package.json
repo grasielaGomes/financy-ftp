@@ -28,7 +28,8 @@
     "react-router-dom": "^7.11.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.5",
+    "@financy/contracts": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
