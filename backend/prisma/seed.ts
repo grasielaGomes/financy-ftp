@@ -10,7 +10,7 @@ async function main() {
 
   for (const category of seedCategories) {
     await prisma.categoryTemplate.upsert({
-      where: { id: category.id },
+      where: { key: category.id },
       update: {
         name: category.name,
         normalizedTitle: normalizeTitle(category.name),
