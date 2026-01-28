@@ -24,24 +24,43 @@ model User {
   updatedAt    DateTime      @updatedAt
 }
 
+model CategoryTemplate {
+  id              String   @id @default(cuid())
+  key             String   @unique 
+  name            String
+  normalizedTitle String   @unique
+  description     String?
+  iconKey         String
+  colorKey        String
+
+  categories      Category[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 model Category {
-  id           String        @id @default(cuid())
-  name         String
+  id              String   @id @default(cuid())
+  name            String
   normalizedTitle String
   description     String?
   iconKey         String
   colorKey        String
 
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId      String?
+  template        CategoryTemplate? @relation(fields: [templateId], references: [id])
 
-  transactions Transaction[]
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  transactions    Transaction[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@unique([userId, normalizedTitle])
   @@index([userId])
+  @@index([templateId])
 }
 
 model Transaction {
