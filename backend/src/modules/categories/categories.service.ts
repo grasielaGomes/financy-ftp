@@ -5,6 +5,7 @@ import { parseOrThrow } from '@/shared/validation/zod'
 import { conflict, notFound } from '@/shared/errors/errors'
 import { isPrismaKnownRequestError } from '@/shared/errors/isPrismaKnownRequestError'
 import { CATEGORY_COLOR_KEYS, CATEGORY_ICON_KEYS } from '@financy/contracts'
+import { normalizeTitle } from '@/shared/utils/normalizeTitle'
 
 const createCategorySchema = z.object({
   name: z
@@ -12,6 +13,7 @@ const createCategorySchema = z.object({
     .trim()
     .min(1, 'Name is required.')
     .max(60, 'Name is too long.'),
+  description: z.string().trim().max(120).optional(),
   iconKey: z.enum(CATEGORY_ICON_KEYS, { message: 'Invalid icon.' }),
   colorKey: z.enum(CATEGORY_COLOR_KEYS, { message: 'Invalid color.' }),
 })
@@ -23,34 +25,29 @@ const updateCategorySchema = z.object({
     .trim()
     .min(1, 'Name is required.')
     .max(60, 'Name is too long.'),
+  description: z.string().trim().max(120).optional(),
   iconKey: z.enum(CATEGORY_ICON_KEYS, { message: 'Invalid icon.' }),
   colorKey: z.enum(CATEGORY_COLOR_KEYS, { message: 'Invalid color.' }),
 })
 
 const removeCategorySchema = z.object({ id: z.string().min(1) })
 
-const normalizeCategoryTitle = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ')
-
-const mapCategory = (c: {
+const mapCategory = (category: {
   id: string
   name: string
+  description: string | null
   iconKey: string
   colorKey: string
   createdAt: Date
   updatedAt: Date
 }) => ({
-  id: c.id,
-  name: c.name,
-  iconKey: c.iconKey,
-  colorKey: c.colorKey,
-  createdAt: c.createdAt.toISOString(),
-  updatedAt: c.updatedAt.toISOString(),
+  id: category.id,
+  name: category.name,
+  description: category.description,
+  iconKey: category.iconKey,
+  colorKey: category.colorKey,
+  createdAt: category.createdAt.toISOString(),
+  updatedAt: category.updatedAt.toISOString(),
 })
 
 export const categoriesService = {
@@ -61,6 +58,7 @@ export const categoriesService = {
       select: {
         id: true,
         name: true,
+        description: true,
         iconKey: true,
         colorKey: true,
         createdAt: true,
@@ -72,18 +70,26 @@ export const categoriesService = {
   },
 
   create: async (prisma: PrismaClientLike, userId: string, input: unknown) => {
-    const { name, iconKey, colorKey } = parseOrThrow(
+    const { name, description, iconKey, colorKey } = parseOrThrow(
       createCategorySchema,
-      input
+      input,
     )
-    const normalizedTitle = normalizeCategoryTitle(name)
+    const normalizedTitle = normalizeTitle(name)
 
     try {
       const created = await prisma.category.create({
-        data: { name, normalizedTitle, iconKey, colorKey, userId },
+        data: {
+          name,
+          normalizedTitle,
+          description: description?.trim() || null,
+          iconKey,
+          colorKey,
+          userId,
+        },
         select: {
           id: true,
           name: true,
+          description: true,
           iconKey: true,
           colorKey: true,
           createdAt: true,
@@ -103,9 +109,9 @@ export const categoriesService = {
   update: async (prisma: PrismaClientLike, userId: string, input: unknown) => {
     const { id, name, iconKey, colorKey } = parseOrThrow(
       updateCategorySchema,
-      input
+      input,
     )
-    const normalizedTitle = normalizeCategoryTitle(name)
+    const normalizedTitle = normalizeTitle(name)
 
     try {
       const result = await prisma.category.updateMany({
@@ -122,6 +128,7 @@ export const categoriesService = {
         select: {
           id: true,
           name: true,
+          description: true,
           iconKey: true,
           colorKey: true,
           createdAt: true,
@@ -143,7 +150,7 @@ export const categoriesService = {
   remove: async (
     prisma: PrismaClientLike,
     userId: string,
-    idInput: unknown
+    idInput: unknown,
   ) => {
     const { id } = parseOrThrow(removeCategorySchema, { id: idInput })
 
