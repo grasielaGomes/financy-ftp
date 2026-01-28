@@ -2,10 +2,11 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 import { signAccessToken } from '@/shared/auth/jwt'
-import type { PrismaClientLike } from '@/types/prisma'
+import type { PrismaClientRoot } from '@/types/prisma'
 import { isPrismaKnownRequestError } from '@/shared/errors/isPrismaKnownRequestError'
 import { parseOrThrow } from '@/shared/validation/zod'
 import { badRequest, conflict, unauthenticated } from '@/shared/errors/errors'
+import { categoryBootstrap } from '@/modules/categories/categoryBootstrap'
 import { normalizeEmail, assertPasswordStrength } from './auth.utils'
 
 const signUpInputSchema = z.object({
@@ -26,7 +27,7 @@ const updateProfileInputSchema = z.object({
 const SALT_ROUNDS = 10
 
 export const authService = {
-  signUp: async (prisma: PrismaClientLike, input: unknown) => {
+  signUp: async (prisma: PrismaClientRoot, input: unknown) => {
     const { email, password, fullName } = parseOrThrow(signUpInputSchema, input)
 
     const normalizedEmail = normalizeEmail(email)
@@ -35,27 +36,32 @@ export const authService = {
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
 
     try {
-      const user = await prisma.user.create({
-        data: {
-          email: normalizedEmail,
-          passwordHash,
-          fullName,
-        },
-        select: { id: true, email: true, fullName: true },
+      const result = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: normalizedEmail,
+            passwordHash,
+            fullName,
+          },
+          select: { id: true, email: true, fullName: true },
+        })
+
+        await categoryBootstrap(tx, user.id)
+
+        const accessToken = signAccessToken(user.id)
+        return { accessToken, user }
       })
 
-      const accessToken = signAccessToken(user.id)
-      return { accessToken, user }
+      return result
     } catch (err: unknown) {
       if (isPrismaKnownRequestError(err) && err.code === 'P2002') {
         throw conflict('Email is already in use.')
       }
-
       throw err
     }
   },
 
-  signIn: async (prisma: PrismaClientLike, input: unknown) => {
+  signIn: async (prisma: PrismaClientRoot, input: unknown) => {
     const { email, password } = parseOrThrow(signInInputSchema, input)
 
     const normalizedEmail = normalizeEmail(email)
@@ -80,9 +86,9 @@ export const authService = {
   },
 
   updateProfile: async (
-    prisma: PrismaClientLike,
+    prisma: PrismaClientRoot,
     userId: string,
-    input: unknown
+    input: unknown,
   ) => {
     const parsed = updateProfileInputSchema.safeParse(input)
     if (!parsed.success) {
@@ -104,7 +110,7 @@ export const authService = {
     return user
   },
 
-  me: async (prisma: PrismaClientLike, userId: string) => {
+  me: async (prisma: PrismaClientRoot, userId: string) => {
     return prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, fullName: true },
