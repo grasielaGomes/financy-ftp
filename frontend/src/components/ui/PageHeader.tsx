@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 type PageHeaderProps = {
   title: string
   description?: string
+  action?: React.ReactNode
   buttonLabel?: string
   buttonIcon?: React.ReactNode
   onButtonClick?: () => void
@@ -19,6 +20,7 @@ type PageHeaderProps = {
 const PageHeader = ({
   title,
   description,
+  action,
   buttonLabel,
   buttonIcon,
   onButtonClick,
@@ -40,12 +42,13 @@ const PageHeader = ({
         )}
       </div>
 
-      {buttonLabel && (
+      {action ??
+        (buttonLabel && (
         <Button size="sm" onClick={onButtonClick} {...buttonProps}>
           {buttonIcon}
           {buttonLabel}
         </Button>
-      )}
+        ))}
     </header>
   )
 }
