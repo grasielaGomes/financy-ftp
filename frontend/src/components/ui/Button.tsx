@@ -30,7 +30,7 @@ const buttonVariants = cva(
       },
       size: {
         md: 'h-12 px-4 py-3.5 has-[>svg]:pl-3.5 has-[>svg]:pr-4',
-        sm: 'h-9 px-3 py-2.5 has-[>svg]:pl-3 has-[>svg]:pr-3.5',
+        sm: 'h-9 px-3 py-2.5 text-sm has-[>svg]:pl-3 has-[>svg]:pr-3.5',
         icon: 'h-8 w-8',
         link: 'h-fit px-0 py-0',
 
@@ -41,7 +41,7 @@ const buttonVariants = cva(
       variant: 'primary',
       size: 'md',
     },
-  }
+  },
 )
 
 function Button({
