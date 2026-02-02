@@ -53,7 +53,7 @@ export const CreateCategoryDialog = ({
 }: CreateCategoryDialogProps) => {
   const [name, setName] = React.useState('')
   const [description, setDescription] = React.useState('')
-  const [iconKey, setIconKey] = React.useState<CategoryIconKey>('shopping-cart')
+  const [iconKey, setIconKey] = React.useState<CategoryIconKey>('briefcase')
   const [colorKey, setColorKey] = React.useState<CategoryColorKey>('green')
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
