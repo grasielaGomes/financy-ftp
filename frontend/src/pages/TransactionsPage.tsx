@@ -1,12 +1,15 @@
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Plus } from 'lucide-react'
+
 export const TransactionsPage = () => {
   return (
     <main className="page">
-      <header className="page__header">
-        <div>
-          <p className="eyebrow">Fluxo de caixa</p>
-          <h1>Transações</h1>
-        </div>
-      </header>
+      <PageHeader
+        title="Transações"
+        description="Gerencie todas as suas transações financeiras"
+        buttonLabel="Nova transação"
+        buttonIcon={<Plus />}
+      />
     </main>
   )
 }
