@@ -89,13 +89,13 @@ export const categoryColorChipClasses: Record<CategoryColorKey, string> = {
 }
 
 export const categoryColorBadgeClasses: Record<CategoryColorKey, string> = {
+  green: 'bg-green-100 text-green-base',
   blue: 'bg-blue-100 text-blue-base',
   purple: 'bg-purple-100 text-purple-base',
   pink: 'bg-pink-100 text-pink-base',
   red: 'bg-red-100 text-red-base',
   orange: 'bg-orange-100 text-orange-base',
   yellow: 'bg-yellow-100 text-yellow-700',
-  green: 'bg-green-100 text-green-base',
 }
 
 export const categoryColorOptions = CATEGORY_COLOR_KEYS.map((key) => ({

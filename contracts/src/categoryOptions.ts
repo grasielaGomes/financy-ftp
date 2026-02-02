@@ -20,13 +20,13 @@ export const CATEGORY_ICON_KEYS = [
 export type CategoryIconKey = (typeof CATEGORY_ICON_KEYS)[number]
 
 export const CATEGORY_COLOR_KEYS = [
+  'green',
   'blue',
   'purple',
   'pink',
   'red',
   'orange',
   'yellow',
-  'green',
 ] as const
 
 export type CategoryColorKey = (typeof CATEGORY_COLOR_KEYS)[number]
