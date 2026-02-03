@@ -34,7 +34,7 @@ const DEFAULT_VALUES: CreateCategoryPayload = {
   colorKey: 'green',
 }
 
-type CreateCategoryDialogProps = {
+type CategoryDialogProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   onSubmit?: (payload: CreateCategoryPayload) => void | Promise<boolean>
@@ -47,7 +47,7 @@ type CreateCategoryDialogProps = {
   submitLabel?: string
 }
 
-export const CreateCategoryDialog = ({
+export const CategoryDialog = ({
   open,
   onOpenChange,
   onSubmit,
@@ -58,7 +58,7 @@ export const CreateCategoryDialog = ({
   title = 'Nova categoria',
   description = 'Organize suas transações com categorias',
   submitLabel = 'Salvar',
-}: CreateCategoryDialogProps) => {
+}: CategoryDialogProps) => {
   const [name, setName] = React.useState(DEFAULT_VALUES.name)
   const [descriptionValue, setDescriptionValue] = React.useState(
     DEFAULT_VALUES.description,
