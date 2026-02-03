@@ -1,5 +1,10 @@
 import * as React from 'react'
 import { ArrowDownCircle, ArrowUpCircle, XIcon } from 'lucide-react'
+import {
+  TRANSACTION_TYPE_LABELS,
+  TRANSACTION_TYPES,
+  type TransactionType,
+} from '@financy/contracts'
 
 import {
   Dialog,
@@ -15,15 +20,13 @@ import { TextField } from '@/components/ui/TextField'
 import { Select } from '@/components/ui/Select'
 import { cn } from '@/lib/utils'
 
-export type TransactionType = 'EXPENSE' | 'INCOME'
-
 type TransactionOption = {
   value: string
   label: string
   disabled?: boolean
 }
 
-type CreateTransactionPayload = {
+export type CreateTransactionPayload = {
   type: TransactionType
   description: string
   date: string
@@ -32,7 +35,7 @@ type CreateTransactionPayload = {
 }
 
 const DEFAULT_VALUES: CreateTransactionPayload = {
-  type: 'EXPENSE',
+  type: TRANSACTION_TYPES[1],
   description: '',
   date: '',
   amount: '',
@@ -60,14 +63,14 @@ const typeOptions: Array<{
   selectedClassName: string
 }> = [
   {
-    value: 'EXPENSE',
-    label: 'Despesa',
+    value: TRANSACTION_TYPES[1],
+    label: TRANSACTION_TYPE_LABELS.EXPENSE,
     icon: ArrowDownCircle,
     selectedClassName: 'border-red-base text-red-base',
   },
   {
-    value: 'INCOME',
-    label: 'Receita',
+    value: TRANSACTION_TYPES[0],
+    label: TRANSACTION_TYPE_LABELS.INCOME,
     icon: ArrowUpCircle,
     selectedClassName: 'border-green-base text-green-base',
   },
@@ -103,10 +106,10 @@ export const TransactionDialog = ({
     }
 
     setType(values.type ?? DEFAULT_VALUES.type)
-    setDescriptionValue(values.description ?? '')
-    setDate(values.date ?? '')
-    setAmount(values.amount ?? '')
-    setCategoryId(values.categoryId ?? '')
+    setDescriptionValue(values.description ?? DEFAULT_VALUES.description)
+    setDate(values.date ?? DEFAULT_VALUES.date)
+    setAmount(values.amount ?? DEFAULT_VALUES.amount)
+    setCategoryId(values.categoryId ?? DEFAULT_VALUES.categoryId)
   }, [open, initialValues])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -123,10 +126,10 @@ export const TransactionDialog = ({
     const shouldClose = closeOnSubmit && result !== false
     if (shouldClose) {
       setType(DEFAULT_VALUES.type)
-      setDescriptionValue('')
-      setDate('')
-      setAmount('')
-      setCategoryId('')
+      setDescriptionValue(DEFAULT_VALUES.description)
+      setDate(DEFAULT_VALUES.date)
+      setAmount(DEFAULT_VALUES.amount)
+      setCategoryId(DEFAULT_VALUES.categoryId)
       onOpenChange?.(false)
     }
   }
@@ -143,6 +146,7 @@ export const TransactionDialog = ({
             <DialogTitle className="text-base">{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
+
           <DialogClose asChild>
             <Button
               type="button"
@@ -170,7 +174,7 @@ export const TransactionDialog = ({
                   className={cn(
                     'flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
                     'border-transparent text-gray-600 hover:bg-gray-100',
-                    isSelected && option.selectedClassName,
+                    isSelected ? option.selectedClassName : '',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -198,9 +202,11 @@ export const TransactionDialog = ({
               value={date}
               placeholder="Selecione"
               inputProps={{
+                type: 'date',
                 onChange: (event) => setDate(event.target.value),
               }}
             />
+
             <TextField
               id="transaction-amount"
               label="Valor"
