@@ -1,12 +1,13 @@
 import type { GraphQLContext } from '@/graphql/context'
 import { requireUser } from '@/shared/auth/requireUser'
+import { TransactionType } from '@financy/contracts'
 import { transactionsService } from './transactions.service'
 
 type CreateTransactionArgs = {
   input: {
     title: string
     amount: number
-    type: 'INCOME' | 'EXPENSE'
+    type: TransactionType
     occurredAt?: string
     categoryId?: string
   }
@@ -17,7 +18,7 @@ type UpdateTransactionArgs = {
     id: string
     title?: string
     amount?: number
-    type?: 'INCOME' | 'EXPENSE'
+    type?: TransactionType
     occurredAt?: string
     categoryId?: string | null
   }
@@ -25,22 +26,33 @@ type UpdateTransactionArgs = {
 
 type DeleteTransactionArgs = { id: string }
 
+type TransactionsQueryArgs = {
+  input?: {
+    search?: string
+    type?: TransactionType
+    categoryId?: string
+    period?: string
+    page?: number
+    perPage?: number
+  }
+}
+
 export const transactionsResolvers = {
   Query: {
     transactions: async (
       _parent: unknown,
-      _args: unknown,
-      ctx: GraphQLContext
+      args: TransactionsQueryArgs,
+      ctx: GraphQLContext,
     ) => {
       const userId = requireUser(ctx)
-      return transactionsService.list(ctx.prisma, userId)
+      return transactionsService.list(ctx.prisma, userId, args.input)
     },
   },
   Mutation: {
     createTransaction: async (
       _parent: unknown,
       args: CreateTransactionArgs,
-      ctx: GraphQLContext
+      ctx: GraphQLContext,
     ) => {
       const userId = requireUser(ctx)
       return transactionsService.create(ctx.prisma, userId, args.input)
@@ -49,7 +61,7 @@ export const transactionsResolvers = {
     updateTransaction: async (
       _parent: unknown,
       args: UpdateTransactionArgs,
-      ctx: GraphQLContext
+      ctx: GraphQLContext,
     ) => {
       const userId = requireUser(ctx)
       return transactionsService.update(ctx.prisma, userId, args.input)
@@ -58,7 +70,7 @@ export const transactionsResolvers = {
     deleteTransaction: async (
       _parent: unknown,
       args: DeleteTransactionArgs,
-      ctx: GraphQLContext
+      ctx: GraphQLContext,
     ) => {
       const userId = requireUser(ctx)
       return transactionsService.remove(ctx.prisma, userId, args.id)
