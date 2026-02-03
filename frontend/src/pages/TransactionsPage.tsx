@@ -1,15 +1,23 @@
-import { Plus, Search } from 'lucide-react'
-import { transactionOptions } from '@financy/contracts'
+import { useCallback, ReactNode } from 'react'
+import { Plus } from 'lucide-react'
 
 import { PageHeader } from '@/components/ui/PageHeader'
-import { Card } from '@/components/ui/Card'
-import { Select } from '@/components/ui/Select'
-import { TextField } from '@/components/ui/TextField'
 import { Button } from '@/components/ui/Button'
 
+import { TransactionsFilters } from '@/features/transactions/components/TransactionsFilters'
+import { TransactionsEmptyState } from '@/features/transactions/components/TransactionsEmptyState'
+import { TransactionsErrorState } from '@/features/transactions/components/TransactionsErrorState'
+import {
+  TransactionsFiltersSkeleton,
+  TransactionsTableSkeleton,
+} from '@/features/transactions/components/TransactionsSkeletons'
 import { TransactionTable } from '@/features/transactions/components/TransactionTable'
 import { TransactionDialog } from '@/features/transactions/components/TransactionDialog'
+import { useDebouncedValue } from '@/features/transactions/hooks/useDebouncedValue'
 import { useTransactionsPage } from '@/features/transactions/hooks/useTransactionsPage'
+
+const PER_PAGE = 10
+const SEARCH_DEBOUNCE_MS = 350
 
 export const TransactionsPage = () => {
   const {
@@ -33,12 +41,72 @@ export const TransactionsPage = () => {
 
     actions,
     loading,
-  } = useTransactionsPage({ perPage: 10 })
+    error,
+  } = useTransactionsPage({ perPage: PER_PAGE })
 
-  console.log(
-    'periodOptions',
-    periodOptions.map((p) => p.label),
+  const [searchDraft, setSearchDraft] = useDebouncedValue({
+    value: filters.search,
+    delay: SEARCH_DEBOUNCE_MS,
+    onChange: setSearch,
+  })
+
+  const isInitialLoading =
+    (loading.periods || loading.categories) && rows.length === 0
+  const isLoadingTransactions = loading.transactions
+
+  const hasError = Boolean(
+    error.transactions || error.periods || error.categories,
   )
+
+  const handleRetry = useCallback(async () => {
+    await actions.refetchTransactions()
+  }, [actions])
+
+  const handleTypeChange = useCallback(
+    (value: string) => setType(value as typeof filters.type),
+    [setType, filters.type],
+  )
+
+  const handlePrevPage = useCallback(() => goToPage(page - 1), [goToPage, page])
+
+  const handleNextPage = useCallback(() => goToPage(page + 1), [goToPage, page])
+
+  const handleEdit = useCallback(
+    (id: string) => dialog.openEditDialog(id),
+    [dialog],
+  )
+
+  const handleDelete = useCallback(
+    (id: string) => actions.remove(id),
+    [actions],
+  )
+
+  const handleCreate = useCallback(() => dialog.openCreateDialog(), [dialog])
+
+  let content: ReactNode
+
+  if (hasError) {
+    content = <TransactionsErrorState onRetry={handleRetry} />
+  } else if (isLoadingTransactions && rows.length === 0) {
+    content = <TransactionsTableSkeleton />
+  } else if (rows.length === 0) {
+    content = <TransactionsEmptyState onCreate={handleCreate} />
+  } else {
+    content = (
+      <TransactionTable
+        rows={rows}
+        paginationLabel={paginationLabel}
+        page={page}
+        totalPages={totalPages}
+        onPrevPage={handlePrevPage}
+        onNextPage={handleNextPage}
+        onGoToPage={goToPage}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        isLoading={isLoadingTransactions}
+      />
+    )
+  }
 
   return (
     <main className="page flex flex-col gap-8">
@@ -69,57 +137,26 @@ export const TransactionsPage = () => {
         }
       />
 
-      <Card className="py-5 px-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <TextField
-            id="transaction-search"
-            label="Buscar"
-            value={filters.search}
-            placeholder="Buscar por descrição"
-            leftIcon={<Search className="h-4 w-4" />}
-            inputProps={{
-              onChange: (event) => setSearch(event.target.value),
-            }}
-          />
+      {isInitialLoading ? (
+        <TransactionsFiltersSkeleton />
+      ) : (
+        <TransactionsFilters
+          search={searchDraft}
+          onSearchChange={setSearchDraft}
+          type={filters.type}
+          onTypeChange={handleTypeChange}
+          categoryId={filters.categoryId}
+          onCategoryChange={setCategoryId}
+          period={filters.period}
+          onPeriodChange={setPeriod}
+          categoryOptions={categoryOptions}
+          periodOptions={periodOptions}
+          isLoading={isLoadingTransactions}
+          isPeriodsLoading={loading.periods}
+        />
+      )}
 
-          <Select
-            id="transaction-type"
-            label="Tipo"
-            value={filters.type}
-            onValueChange={(value) => setType(value as typeof filters.type)}
-            options={transactionOptions}
-          />
-
-          <Select
-            id="transaction-category"
-            label="Categoria"
-            value={filters.categoryId}
-            onValueChange={setCategoryId}
-            options={[{ value: 'all', label: 'Todas' }, ...categoryOptions]}
-          />
-
-          <Select
-            id="transaction-period"
-            label="Período"
-            value={filters.period}
-            onValueChange={setPeriod}
-            options={periodOptions}
-          />
-        </div>
-      </Card>
-
-      <TransactionTable
-        rows={rows}
-        paginationLabel={paginationLabel}
-        page={page}
-        totalPages={totalPages}
-        onPrevPage={() => goToPage(page - 1)}
-        onNextPage={() => goToPage(page + 1)}
-        onGoToPage={goToPage}
-        onEdit={(id) => dialog.openEditDialog(id)}
-        onDelete={(id) => actions.deleteTransaction(id)}
-        isLoading={loading.transactions}
-      />
+      {content}
     </main>
   )
 }
