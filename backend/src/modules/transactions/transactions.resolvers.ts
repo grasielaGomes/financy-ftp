@@ -47,6 +47,14 @@ export const transactionsResolvers = {
       const userId = requireUser(ctx)
       return transactionsService.list(ctx.prisma, userId, args.input)
     },
+    transactionPeriods: async (
+      _parent: unknown,
+      _args: unknown,
+      ctx: GraphQLContext,
+    ) => {
+      const userId = requireUser(ctx)
+      return transactionsService.listPeriods(ctx.prisma, userId)
+    },
   },
   Mutation: {
     createTransaction: async (
