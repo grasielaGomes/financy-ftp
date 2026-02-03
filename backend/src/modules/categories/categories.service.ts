@@ -43,6 +43,9 @@ const mapCategory = (category: {
   colorKey: string
   createdAt: Date
   updatedAt: Date
+  _count?: {
+    transactions: number
+  }
 }) => ({
   id: category.id,
   name: category.name,
@@ -51,6 +54,7 @@ const mapCategory = (category: {
   colorKey: category.colorKey,
   createdAt: category.createdAt.toISOString(),
   updatedAt: category.updatedAt.toISOString(),
+  transactionsCount: category._count?.transactions ?? 0,
 })
 
 export const categoriesService = {
@@ -66,6 +70,11 @@ export const categoriesService = {
         colorKey: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            transactions: true,
+          },
+        },
       },
     })
 
@@ -97,6 +106,11 @@ export const categoriesService = {
           colorKey: true,
           createdAt: true,
           updatedAt: true,
+          _count: {
+            select: {
+              transactions: true,
+            },
+          },
         },
       })
 
@@ -161,6 +175,11 @@ export const categoriesService = {
           description: true,
           createdAt: true,
           updatedAt: true,
+          _count: {
+            select: {
+              transactions: true,
+            },
+          },
         },
       })
 
