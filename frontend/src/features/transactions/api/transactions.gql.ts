@@ -21,6 +21,15 @@ export const TRANSACTIONS_QUERY = gql`
   }
 `
 
+export const TRANSACTION_PERIODS_QUERY = gql`
+  query TransactionPeriods {
+    transactionPeriods {
+      period
+      count
+    }
+  }
+`
+
 export const CREATE_TRANSACTION_MUTATION = gql`
   mutation CreateTransaction($input: CreateTransactionInput!) {
     createTransaction(input: $input) {
