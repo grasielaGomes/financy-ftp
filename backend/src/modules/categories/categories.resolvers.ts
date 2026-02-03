@@ -21,7 +21,7 @@ type UpdateCategoryArgs = {
   }
 }
 
-type DeleteCategoryArgs = { input: { id: string } }
+type DeleteCategoryArgs = { id: string }
 
 export const categoriesResolvers = {
   Query: {
@@ -59,7 +59,7 @@ export const categoriesResolvers = {
       ctx: GraphQLContext,
     ) => {
       const userId = requireUser(ctx)
-      return categoriesService.remove(ctx.prisma, userId, args.input.id)
+      return categoriesService.remove(ctx.prisma, userId, args.id)
     },
   },
 }
