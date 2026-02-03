@@ -16,6 +16,7 @@ import {
   Ticket,
   ToolCase,
   Utensils,
+  Tag,
 } from 'lucide-react'
 import {
   CATEGORY_COLOR_KEYS,
@@ -98,10 +99,43 @@ export const categoryColorBadgeClasses: Record<CategoryColorKey, string> = {
   yellow: 'bg-yellow-100 text-yellow-700',
 }
 
+export const categoryIconTextClasses: Record<CategoryColorKey, string> = {
+  blue: 'text-blue-base',
+  purple: 'text-purple-base',
+  pink: 'text-pink-base',
+  red: 'text-red-base',
+  orange: 'text-orange-base',
+  yellow: 'text-yellow-base',
+  green: 'text-green-base',
+}
+
 export const categoryColorOptions = CATEGORY_COLOR_KEYS.map((key) => ({
   key,
   label: colorLabels[key],
   className: categoryColorChipClasses[key],
 }))
+
+export const DEFAULT_ICON_KEY: CategoryIconKey = 'briefcase'
+export const DEFAULT_COLOR_KEY: CategoryColorKey = 'green'
+
+export const isCategoryIconKey = (key: unknown): key is CategoryIconKey => {
+  return typeof key === 'string' && key in categoryIconMap
+}
+
+export const isCategoryColorKey = (key: unknown): key is CategoryColorKey => {
+  return typeof key === 'string' && key in categoryColorBadgeClasses
+}
+
+export const getSafeIconKey = (key: unknown): CategoryIconKey => {
+  if (isCategoryIconKey(key)) return key
+  return DEFAULT_ICON_KEY
+}
+
+export const getSafeColorKey = (key: unknown): CategoryColorKey => {
+  if (isCategoryColorKey(key)) return key
+  return DEFAULT_COLOR_KEY
+}
+
+export const MostUsedFallbackIcon = Tag
 
 export type { CategoryColorKey, CategoryIconKey }
