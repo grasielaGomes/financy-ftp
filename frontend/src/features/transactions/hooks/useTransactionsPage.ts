@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@apollo/client/react'
 import type { DocumentNode } from 'graphql'
 
@@ -6,6 +6,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast'
 
 import {
   TRANSACTIONS_QUERY,
+  TRANSACTION_PERIODS_QUERY,
   CREATE_TRANSACTION_MUTATION,
   UPDATE_TRANSACTION_MUTATION,
   DELETE_TRANSACTION_MUTATION,
@@ -23,11 +24,7 @@ import type {
   CategoryColorKey,
   CategoryIconKey,
 } from '@/features/categories/helpers/categoryOptions'
-
-import {
-  buildPeriodOptions,
-  getCurrentPeriod,
-} from '@/features/transactions/helpers/period'
+import { toMonthLabelPTBR } from '@/features/transactions/helpers/period'
 
 type CategoryOption = { value: string; label: string; disabled?: boolean }
 
@@ -52,6 +49,11 @@ type TransactionGQL = {
   } | null
 }
 
+type TransactionPeriodGQL = {
+  period: string // YYYY-MM
+  count: number
+}
+
 export type TransactionRow = {
   id: string
   description: string
@@ -70,7 +72,7 @@ export type TransactionsFilters = {
   search: string
   type: TransactionTypeFilter
   categoryId: 'all' | string
-  period: string
+  period: string // '' or YYYY-MM
 }
 
 type TransactionsQueryInput = {
@@ -93,18 +95,16 @@ type CategoriesQueryData = {
   categories: CategoryGQL[]
 }
 
+type TransactionPeriodsQueryData = {
+  transactionPeriods: TransactionPeriodGQL[]
+}
+
 export type TransactionDialogPayload = {
   type: TransactionType
   description: string
-  date: string // YYYY-MM-DD (input)
+  date: string
   amount: string
   categoryId: string
-}
-
-type UseTransactionsPageOptions = {
-  initialPeriod?: string
-  perPage?: number
-  periodOptionsCount?: number
 }
 
 type RefetchQuery = { query: DocumentNode; variables?: Record<string, unknown> }
@@ -164,49 +164,90 @@ const isoToDateInput = (iso: string): string => {
   return `${year}-${month}-${day}`
 }
 
+const buildPeriodOptionsFromApi = (periods: TransactionPeriodGQL[]) => {
+  const apiOptions = periods.map((p) => ({
+    value: p.period,
+    label: `${toMonthLabelPTBR(p.period)} (${Number(p.count ?? 0)})`,
+  }))
+
+  return [{ value: '', label: 'Todos' }, ...apiOptions]
+}
+
+type UseTransactionsPageOptions = {
+  perPage?: number
+}
+
 export const useTransactionsPage = (
   options: UseTransactionsPageOptions = {},
 ) => {
-  const {
-    initialPeriod = getCurrentPeriod(),
-    perPage = 10,
-    periodOptionsCount = 24,
-  } = options
+  const { perPage = 10 } = options
 
-  const [filters, setFilters] = React.useState<TransactionsFilters>({
+  const [filters, setFilters] = useState<TransactionsFilters>({
     search: '',
     type: 'all',
     categoryId: 'all',
-    period: initialPeriod,
+    period: '',
   })
 
-  const [page, setPage] = React.useState(1)
+  const [page, setPage] = useState(1)
 
-  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] =
-    React.useState<TransactionGQL | null>(null)
-
-  const periodOptions = React.useMemo(
-    () => buildPeriodOptions(periodOptionsCount),
-    [periodOptionsCount],
-  )
+    useState<TransactionGQL | null>(null)
 
   const categoriesQuery = useQuery<CategoriesQueryData>(CATEGORIES_QUERY)
+  const periodsQuery = useQuery<TransactionPeriodsQueryData>(
+    TRANSACTION_PERIODS_QUERY,
+  )
 
-  const transactionsInput: TransactionsQueryInput = React.useMemo(() => {
-    const input: TransactionsQueryInput = {
-      page,
-      perPage,
-    }
+  const availablePeriods = periodsQuery.data?.transactionPeriods ?? []
+
+  const periodOptions = useMemo(() => {
+    return buildPeriodOptionsFromApi(availablePeriods)
+  }, [availablePeriods])
+
+  // Auto-pick the most recent period
+  useEffect(() => {
+    if (filters.period !== '') return
+    if (availablePeriods.length === 0) return
+
+    const mostRecent = availablePeriods[0]?.period
+    if (!mostRecent) return
+
+    setFilters((prev) => ({ ...prev, period: mostRecent }))
+  }, [availablePeriods, filters.period])
+
+  // If selected period no longer exists, fallback to most recent
+  useEffect(() => {
+    if (filters.period === '') return
+    if (availablePeriods.length === 0) return
+
+    const stillExists = availablePeriods.some(
+      (p) => p.period === filters.period,
+    )
+    if (stillExists) return
+
+    const mostRecent = availablePeriods[0]?.period
+    if (!mostRecent) return
+
+    setPage(1)
+    setFilters((prev) => ({ ...prev, period: mostRecent }))
+  }, [availablePeriods, filters.period])
+
+  const transactionsInput: TransactionsQueryInput = useMemo(() => {
+    const input: TransactionsQueryInput = { page, perPage }
 
     const normalizedType = toTransactionType(filters.type)
     const normalizedCategoryId =
       filters.categoryId === 'all' ? undefined : filters.categoryId
 
-    if (filters.search.trim() !== '') input.search = filters.search.trim()
+    const search = filters.search.trim()
+    const period = filters.period.trim()
+
+    if (search !== '') input.search = search
     if (normalizedType) input.type = normalizedType
     if (normalizedCategoryId) input.categoryId = normalizedCategoryId
-    if (filters.period.trim() !== '') input.period = filters.period.trim()
+    if (period !== '') input.period = period
 
     return input
   }, [filters, page, perPage])
@@ -218,6 +259,24 @@ export const useTransactionsPage = (
     },
   )
 
+  const total = transactionsQuery.data?.transactions.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / perPage))
+  const startIndex = total === 0 ? 0 : (page - 1) * perPage + 1
+  const endIndex = total === 0 ? 0 : Math.min(page * perPage, total)
+
+  const paginationLabel =
+    total === 0
+      ? '0 resultados'
+      : `${startIndex} a ${endIndex} | ${total} resultados`
+
+  const refetchAfterTransaction = useMemo<RefetchQuery[]>(() => {
+    return [
+      { query: TRANSACTIONS_QUERY, variables: { input: transactionsInput } },
+      { query: TRANSACTION_PERIODS_QUERY },
+      { query: CATEGORIES_QUERY },
+    ]
+  }, [transactionsInput])
+
   const [createTransaction, { loading: creating }] = useMutation(
     CREATE_TRANSACTION_MUTATION,
   )
@@ -228,14 +287,7 @@ export const useTransactionsPage = (
     DELETE_TRANSACTION_MUTATION,
   )
 
-  const transactionsRefetch: RefetchQuery[] = React.useMemo(
-    () => [
-      { query: TRANSACTIONS_QUERY, variables: { input: transactionsInput } },
-    ],
-    [transactionsInput],
-  )
-
-  const runMutation = React.useCallback(
+  const runMutation = useCallback(
     async <TVariables>(
       executor: MutationExecutor<TVariables>,
       variables: TVariables,
@@ -245,7 +297,7 @@ export const useTransactionsPage = (
       try {
         await executor({
           variables,
-          refetchQueries: transactionsRefetch,
+          refetchQueries: refetchAfterTransaction,
           awaitRefetchQueries: true,
         })
 
@@ -256,15 +308,15 @@ export const useTransactionsPage = (
         return false
       }
     },
-    [transactionsRefetch],
+    [refetchAfterTransaction],
   )
 
-  const categoryOptions: CategoryOption[] = React.useMemo(() => {
+  const categoryOptions: CategoryOption[] = useMemo(() => {
     const items = categoriesQuery.data?.categories ?? []
     return items.map((c) => ({ value: c.id, label: c.name }))
   }, [categoriesQuery.data])
 
-  const rows: TransactionRow[] = React.useMemo(() => {
+  const rows: TransactionRow[] = useMemo(() => {
     const items = transactionsQuery.data?.transactions.items ?? []
 
     return items.map((t) => {
@@ -287,22 +339,6 @@ export const useTransactionsPage = (
       }
     })
   }, [transactionsQuery.data])
-
-  const total = transactionsQuery.data?.transactions.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / perPage))
-  const startIndex = total === 0 ? 0 : (page - 1) * perPage + 1
-  const endIndex = total === 0 ? 0 : Math.min(page * perPage, total)
-
-  const paginationLabel =
-    total === 0
-      ? '0 resultados'
-      : `${startIndex} a ${endIndex} | ${total} resultados`
-
-  React.useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages)
-    }
-  }, [page, totalPages])
 
   const setSearch = (value: string) => {
     setPage(1)
@@ -332,18 +368,8 @@ export const useTransactionsPage = (
   const openEditDialog = (transactionId: string) => {
     const items = transactionsQuery.data?.transactions.items ?? []
     const found = items.find((t) => t.id === transactionId) ?? null
-
-    if (!found) {
-      showErrorToast(
-        null,
-        'Não foi possível carregar os dados da transação para edição.',
-      )
-      return false
-    }
-
     setEditingTransaction(found)
     setDialogOpen(true)
-    return true
   }
 
   const closeDialog = () => {
@@ -352,7 +378,7 @@ export const useTransactionsPage = (
   }
 
   const dialogInitialValues: Partial<TransactionDialogPayload> | undefined =
-    React.useMemo(() => {
+    useMemo(() => {
       if (!editingTransaction) return undefined
 
       const categoryId = editingTransaction.category?.id ?? ''
@@ -368,19 +394,6 @@ export const useTransactionsPage = (
       }
     }, [editingTransaction])
 
-  const maybeSyncPeriodFromDate = (dateInput: string) => {
-    const trimmed = dateInput.trim()
-    if (trimmed === '') return
-
-    const nextPeriod = trimmed.slice(0, 7) // YYYY-MM
-    if (nextPeriod.length !== 7) return
-
-    if (nextPeriod !== filters.period) {
-      setPage(1)
-      setFilters((prev) => ({ ...prev, period: nextPeriod }))
-    }
-  }
-
   const submitTransaction = async (
     payload: TransactionDialogPayload,
   ): Promise<boolean> => {
@@ -393,12 +406,21 @@ export const useTransactionsPage = (
 
     const occurredAt =
       payload.date.trim() === '' ? undefined : payload.date.trim()
+
     const categoryId =
       payload.categoryId.trim() === '' ? undefined : payload.categoryId.trim()
 
     if (!editingTransaction) {
-      const ok = await runMutation(
-        createTransaction,
+      return runMutation(
+        createTransaction as unknown as MutationExecutor<{
+          input: {
+            title: string
+            amount: number
+            type: TransactionType
+            occurredAt?: string
+            categoryId?: string
+          }
+        }>,
         {
           input: {
             title: payload.description,
@@ -411,16 +433,19 @@ export const useTransactionsPage = (
         'Transação criada com sucesso.',
         'Não foi possível criar a transação.',
       )
-
-      if (ok) {
-        maybeSyncPeriodFromDate(payload.date)
-        closeDialog()
-      }
-      return ok
     }
 
-    const ok = await runMutation(
-      updateTransaction,
+    return runMutation(
+      updateTransaction as unknown as MutationExecutor<{
+        input: {
+          id: string
+          title: string
+          amount: number
+          type: TransactionType
+          occurredAt?: string
+          categoryId?: string
+        }
+      }>,
       {
         input: {
           id: editingTransaction.id,
@@ -434,17 +459,11 @@ export const useTransactionsPage = (
       'Transação atualizada com sucesso.',
       'Não foi possível atualizar a transação.',
     )
-
-    if (ok) {
-      maybeSyncPeriodFromDate(payload.date)
-      closeDialog()
-    }
-    return ok
   }
 
-  const handleDeleteTransaction = async (id: string): Promise<boolean> => {
+  const removeTransaction = (id: string): Promise<boolean> => {
     return runMutation(
-      deleteTransaction,
+      deleteTransaction as unknown as MutationExecutor<{ id: string }>,
       { id },
       'Transação removida com sucesso.',
       'Não foi possível remover a transação.',
@@ -455,8 +474,6 @@ export const useTransactionsPage = (
     const safe = Math.min(Math.max(1, nextPage), totalPages)
     setPage(safe)
   }
-
-  const isBusy = creating || updating || deleting
 
   return {
     filters: {
@@ -494,22 +511,23 @@ export const useTransactionsPage = (
     },
 
     actions: {
-      deleteTransaction: handleDeleteTransaction,
+      creating,
+      updating,
+      deleting,
+      remove: removeTransaction,
       refetchTransactions: transactionsQuery.refetch,
     },
 
     loading: {
       categories: categoriesQuery.loading,
       transactions: transactionsQuery.loading,
-      creating,
-      updating,
-      deleting,
-      isBusy,
+      periods: periodsQuery.loading,
     },
 
     error: {
       categories: categoriesQuery.error,
       transactions: transactionsQuery.error,
+      periods: periodsQuery.error,
     },
   }
 }
