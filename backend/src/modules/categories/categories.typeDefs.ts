@@ -5,6 +5,7 @@ export const categoriesTypeDefs = /* GraphQL */ `
     description: String
     iconKey: String!
     colorKey: String!
+    transactionsCount: Int!
     createdAt: String!
     updatedAt: String!
   }
