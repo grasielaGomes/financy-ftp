@@ -4,7 +4,7 @@ import { getErrorMessage, getFirstGraphQLError } from '@/lib/graphql/error'
 export const showErrorToast = (err: unknown, fallback?: string) => {
   const isGraphQLError = !!getFirstGraphQLError(err)
   const message = isGraphQLError
-    ? getErrorMessage(err)
+    ? fallback ?? getErrorMessage(err)
     : fallback ?? getErrorMessage(err)
 
   toast.error(message)
