@@ -2,18 +2,10 @@ import { useState } from 'react'
 import { ArrowUpDown, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/Dialog'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { CategoryCard } from '@/features/categories/components/CategoryCard'
-import { CreateCategoryDialog } from '@/features/categories/components/CreateCategoryDialog'
+import { CategoryDialog } from '@/features/categories/components/CategoryDialog'
 import { CategoryMetricCard } from '@/features/categories/components/CategoryMetricCard'
 
 import { useCategoriesPage } from '@/features/categories/hooks/useCategoriesPage'
@@ -138,7 +130,7 @@ export const CategoriesPage = () => {
         title="Categorias"
         description="Organize suas transações por categorias"
         action={
-          <CreateCategoryDialog
+          <CategoryDialog
             onSubmit={actions.create}
             trigger={
               <Button size="sm">
@@ -150,7 +142,7 @@ export const CategoriesPage = () => {
         }
       />
 
-      <CreateCategoryDialog
+      <CategoryDialog
         open={isEditOpen}
         onOpenChange={handleEditOpenChange}
         onSubmit={(payload) => {
@@ -172,33 +164,22 @@ export const CategoriesPage = () => {
             : undefined
         }
       />
-      <Dialog open={isDeleteOpen} onOpenChange={handleDeleteOpenChange}>
-        <DialogContent className="max-w-[420px]" showCloseButton={false}>
-          <DialogHeader className="gap-3 text-left">
-            <DialogTitle>Excluir categoria</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir a categoria
-              {deletingCategory ? ` “${deletingCategory.name}”` : ''}? Todas as
-              transações associadas a essa categoria perderão os vínculos a essa
-              categoria. Essa ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-2">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancelar
-              </Button>
-            </DialogClose>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={handleConfirmDelete}
-            >
-              Excluir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={isDeleteOpen}
+        onOpenChange={handleDeleteOpenChange}
+        title="Excluir categoria"
+        description={
+          <>
+            Tem certeza que deseja excluir a categoria
+            {deletingCategory ? ` “${deletingCategory.name}”` : ''}? Todas as
+            transações associadas a essa categoria perderão os vínculos a essa
+            categoria. Essa ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDelete}
+      />
 
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <CategoryMetricCard
