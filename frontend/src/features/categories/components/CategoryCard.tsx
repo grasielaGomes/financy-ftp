@@ -3,9 +3,9 @@ import { Card } from '@/components/ui/Card'
 import { Tag } from '@/components/ui/Tag'
 import { cn } from '@/lib/utils'
 import { SquarePen, Trash } from 'lucide-react'
+import { CategoryIconBadge } from '@/features/categories/components/CategoryIconBadge'
 import {
   categoryColorBadgeClasses,
-  categoryIconMap,
   type CategoryColorKey,
   type CategoryIconKey,
 } from '@/features/categories/helpers/categoryOptions'
@@ -33,21 +33,12 @@ export const CategoryCard = ({
   onDelete,
   className,
 }: CategoryCardProps) => {
-  const Icon = categoryIconMap[iconKey]
   const colorClasses = categoryColorBadgeClasses[colorKey]
 
   return (
     <Card className={cn('flex h-full flex-col gap-4 p-4', className)}>
       <div className="flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            'flex size-9 items-center justify-center rounded-md',
-            'bg-gray-100 text-gray-700 [&_svg]:h-4 [&_svg]:w-4',
-            colorClasses,
-          )}
-        >
-          <Icon />
-        </div>
+        <CategoryIconBadge iconKey={iconKey} colorKey={colorKey} />
 
         <div className="flex items-center gap-2">
           {onDelete && (
