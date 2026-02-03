@@ -17,13 +17,6 @@ export const TransactionsEmptyState = ({ onCreate }: EmptyStateProps) => {
         <p className="text-sm text-gray-600">
           Ajuste os filtros ou crie uma nova transação.
         </p>
-
-        <div className="mt-4 flex justify-center">
-          <Button type="button" onClick={onCreate}>
-            <Plus className="h-4 w-4" />
-            Nova transação
-          </Button>
-        </div>
       </div>
     </Card>
   )
