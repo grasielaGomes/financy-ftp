@@ -25,9 +25,7 @@ const buttonVariants = cva(
         outline: 'border border-input bg-white text-gray-800 hover:bg-gray-200',
         link: 'text-primary underline-offset-4 text-sm hover:underline',
         pagination:
-          'h-8 w-8 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200',
-        paginationActive:
-          'h-8 w-8 rounded-md bg-primary text-gray-100 hover:bg-primary/90',
+          'h-8 w-8 rounded-md border border-gray-200 text-sm text-gray-700 hover:bg-gray-200 aria-active:bg-primary aria-active:border-primary aria-active:text-white',
       },
       size: {
         md: 'h-12 px-4 py-3.5 has-[>svg]:pl-3.5 has-[>svg]:pr-4',
