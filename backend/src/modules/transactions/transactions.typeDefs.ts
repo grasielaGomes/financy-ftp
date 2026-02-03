@@ -1,7 +1,12 @@
+import { TRANSACTION_TYPES } from '@financy/contracts'
+
+const transactionTypeSDL = TRANSACTION_TYPES.map((value) => `  ${value}`).join(
+  '\n',
+)
+
 export const transactionsTypeDefs = /* GraphQL */ `
   enum TransactionType {
-    INCOME
-    EXPENSE
+${transactionTypeSDL}
   }
 
   type Transaction {
@@ -32,8 +37,22 @@ export const transactionsTypeDefs = /* GraphQL */ `
     categoryId: ID
   }
 
+  input TransactionsQueryInput {
+    search: String
+    type: TransactionType
+    categoryId: ID
+    period: String
+    page: Int
+    perPage: Int
+  }
+
+  type TransactionsResult {
+    items: [Transaction!]!
+    total: Int!
+  }
+
   extend type Query {
-    transactions: [Transaction!]!
+    transactions(input: TransactionsQueryInput): TransactionsResult!
   }
 
   extend type Mutation {
