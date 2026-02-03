@@ -1,21 +1,24 @@
 import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-export type TransactionTagType = 'INCOME' | 'EXPENSE'
+import {
+  TRANSACTION_TYPE_LABELS,
+  TRANSACTION_TYPES,
+  type TransactionType,
+} from '@financy/contracts'
 
 type TransactionTagProps = {
-  type: TransactionTagType
+  type: TransactionType
   className?: string
 }
 
 const typeConfig = {
-  INCOME: {
-    label: 'Entrada',
+  [TRANSACTION_TYPES[0]]: {
+    label: TRANSACTION_TYPE_LABELS.INCOME,
     icon: ArrowUpCircle,
     className: 'text-green-base',
   },
-  EXPENSE: {
-    label: 'Saída',
+  [TRANSACTION_TYPES[1]]: {
+    label: TRANSACTION_TYPE_LABELS.EXPENSE,
     icon: ArrowDownCircle,
     className: 'text-red-base',
   },
