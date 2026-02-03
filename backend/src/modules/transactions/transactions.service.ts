@@ -203,6 +203,25 @@ export const transactionsService = {
     return { items: items.map(mapTransaction), total }
   },
 
+  listPeriods: async (prisma: PrismaClientLike, userId: string) => {
+    const rows = await prisma.$queryRaw<
+      Array<{ period: string; count: number }>
+    >`
+      SELECT
+        strftime('%Y-%m', occurredAt) as period,
+        COUNT(*) as count
+      FROM "Transaction"
+      WHERE userId = ${userId}
+      GROUP BY period
+      ORDER BY period DESC
+    `
+
+    return rows.map((r) => ({
+      period: String(r.period),
+      count: Number(r.count),
+    }))
+  },
+
   create: async (prisma: PrismaClientLike, userId: string, input: unknown) => {
     const { title, amount, type, occurredAt, categoryId } = parseOrThrow(
       createTransactionSchema,
