@@ -21,6 +21,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: 'bg-primary text-white hover:bg-brand-dark',
+        danger: 'bg-danger text-white hover:bg-danger-dark',
         outline: 'border border-input bg-white text-gray-800 hover:bg-gray-200',
         link: 'text-primary underline-offset-4 text-sm hover:underline',
         pagination:
