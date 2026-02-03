@@ -51,8 +51,14 @@ ${transactionTypeSDL}
     total: Int!
   }
 
+  type TransactionPeriod {
+    period: String!
+    count: Int!
+  }
+
   extend type Query {
     transactions(input: TransactionsQueryInput): TransactionsResult!
+    transactionPeriods: [TransactionPeriod!]!
   }
 
   extend type Mutation {
