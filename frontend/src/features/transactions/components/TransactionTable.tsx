@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { ChevronLeft, ChevronRight, SquarePen, Trash } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Tag } from '@/components/ui/Tag'
 import { TransactionTag, type TransactionTagType } from './TransactionTag'
 import { CategoryIconBadge } from '@/features/categories/components/CategoryIconBadge'
@@ -96,6 +98,19 @@ const rows: TransactionRow[] = [
 ]
 
 export const TransactionTable = () => {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [deletingTransaction, setDeletingTransaction] = useState<
+    Pick<TransactionRow, 'id' | 'description'> | null
+  >(null)
+
+  const handleDeleteOpenChange = (open: boolean) => {
+    setIsDeleteOpen(open)
+
+    if (!open) {
+      setDeletingTransaction(null)
+    }
+  }
+
   const headers = [
     { label: 'Descrição' },
     { label: 'Data', className: 'text-center' },
@@ -162,6 +177,13 @@ export const TransactionTable = () => {
                         size="icon"
                         type="button"
                         aria-label="Excluir transação"
+                        onClick={() => {
+                          setDeletingTransaction({
+                            id: row.id,
+                            description: row.description,
+                          })
+                          setIsDeleteOpen(true)
+                        }}
                       >
                         <Trash className="h-4 w-4 text-danger" />
                       </Button>
@@ -207,6 +229,21 @@ export const TransactionTable = () => {
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={isDeleteOpen}
+        onOpenChange={handleDeleteOpenChange}
+        title="Excluir transação"
+        description={
+          <>
+            Tem certeza que deseja excluir a transação
+            {deletingTransaction ? ` “${deletingTransaction.description}”` : ''}
+            ? Essa ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+      />
     </Card>
   )
 }
