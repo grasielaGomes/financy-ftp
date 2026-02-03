@@ -1,7 +1,4 @@
-import { Plus } from 'lucide-react'
-
 import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 
 type EmptyStateProps = {
   onCreate: () => void
