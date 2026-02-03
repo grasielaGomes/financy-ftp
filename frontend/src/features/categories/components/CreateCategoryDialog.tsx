@@ -21,27 +21,30 @@ import {
 } from '@/features/categories/helpers/categoryOptions'
 
 type CreateCategoryPayload = {
-  id: string
   name: string
   description: string
   iconKey: CategoryIconKey
   colorKey: CategoryColorKey
 }
 
+const DEFAULT_VALUES: CreateCategoryPayload = {
+  name: '',
+  description: '',
+  iconKey: 'briefcase',
+  colorKey: 'green',
+}
+
 type CreateCategoryDialogProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  onSubmit?: (payload: CreateCategoryPayload) => void
+  onSubmit?: (payload: CreateCategoryPayload) => void | Promise<boolean>
   trigger?: React.ReactNode
   className?: string
-}
-
-const createId = () => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID()
-  }
-
-  return `category-${Date.now()}`
+  closeOnSubmit?: boolean
+  initialValues?: Partial<CreateCategoryPayload>
+  title?: string
+  description?: string
+  submitLabel?: string
 }
 
 export const CreateCategoryDialog = ({
@@ -50,28 +53,55 @@ export const CreateCategoryDialog = ({
   onSubmit,
   trigger,
   className,
+  closeOnSubmit = true,
+  initialValues,
+  title = 'Nova categoria',
+  description = 'Organize suas transações com categorias',
+  submitLabel = 'Salvar',
 }: CreateCategoryDialogProps) => {
-  const [name, setName] = React.useState('')
-  const [description, setDescription] = React.useState('')
-  const [iconKey, setIconKey] = React.useState<CategoryIconKey>('briefcase')
-  const [colorKey, setColorKey] = React.useState<CategoryColorKey>('green')
+  const [name, setName] = React.useState(DEFAULT_VALUES.name)
+  const [descriptionValue, setDescriptionValue] = React.useState(
+    DEFAULT_VALUES.description,
+  )
+  const [iconKey, setIconKey] = React.useState<CategoryIconKey>(
+    DEFAULT_VALUES.iconKey,
+  )
+  const [colorKey, setColorKey] = React.useState<CategoryColorKey>(
+    DEFAULT_VALUES.colorKey,
+  )
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  React.useEffect(() => {
+    if (!open) return
+
+    const values = {
+      ...DEFAULT_VALUES,
+      ...initialValues,
+    }
+
+    setName(values.name ?? '')
+    setDescriptionValue(values.description ?? '')
+    setIconKey(values.iconKey ?? DEFAULT_VALUES.iconKey)
+    setColorKey(values.colorKey ?? DEFAULT_VALUES.colorKey)
+  }, [open, initialValues])
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    onSubmit?.({
-      id: createId(),
+    const result = await onSubmit?.({
       name,
-      description,
+      description: descriptionValue,
       iconKey,
       colorKey,
     })
 
-    setName('')
-    setDescription('')
-    setIconKey('shopping-cart')
-    setColorKey('green')
-    onOpenChange?.(false)
+    const shouldClose = closeOnSubmit && result !== false
+    if (shouldClose) {
+      setName('')
+      setDescriptionValue('')
+      setIconKey('shopping-cart')
+      setColorKey('green')
+      onOpenChange?.(false)
+    }
   }
 
   return (
@@ -83,10 +113,8 @@ export const CreateCategoryDialog = ({
       >
         <div className="flex items-start justify-between gap-4 mb-2">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-base">Nova categoria</DialogTitle>
-            <DialogDescription>
-              Organize suas transações com categorias
-            </DialogDescription>
+            <DialogTitle className="text-base">{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           <DialogClose asChild>
             <Button
@@ -115,11 +143,11 @@ export const CreateCategoryDialog = ({
           <TextField
             id="category-description"
             label="Descrição"
-            value={description}
+            value={descriptionValue}
             placeholder="Descrição da categoria"
             hint="Opcional"
             inputProps={{
-              onChange: (event) => setDescription(event.target.value),
+              onChange: (event) => setDescriptionValue(event.target.value),
             }}
           />
 
@@ -179,7 +207,7 @@ export const CreateCategoryDialog = ({
           </div>
 
           <Button type="submit" className="mt-2 w-full">
-            Salvar
+            {submitLabel}
           </Button>
         </form>
       </DialogContent>
