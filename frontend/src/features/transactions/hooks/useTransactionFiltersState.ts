@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { buildTransactionsInput } from './transactionsPage.utils'
 import type {
@@ -19,15 +19,18 @@ export const useTransactionFiltersState = (
 ) => {
   const [filters, setFilters] = useState<TransactionsFilters>(DEFAULT_FILTERS)
   const [page, setPage] = useState(1)
+  const hasAutoSelectedInitialPeriod = useRef(false)
 
-  // Auto-pick the most recent period
+  // Auto-pick the most recent period only once, so users can later select "Todos"
   useEffect(() => {
+    if (hasAutoSelectedInitialPeriod.current) return
     if (filters.period !== '') return
     if (availablePeriods.length === 0) return
 
     const mostRecent = availablePeriods[0]?.period
     if (!mostRecent) return
 
+    hasAutoSelectedInitialPeriod.current = true
     setFilters((prev) => ({ ...prev, period: mostRecent }))
   }, [availablePeriods, filters.period])
 
