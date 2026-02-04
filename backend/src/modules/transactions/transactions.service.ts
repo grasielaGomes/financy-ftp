@@ -157,13 +157,13 @@ export const transactionsService = {
       userId: string
       type?: TransactionType
       categoryId?: string
-      title?: { contains: string; mode: 'insensitive' }
+      title?: { contains: string; mode?: 'insensitive' }
       occurredAt?: { gte: Date; lt: Date }
     } = { userId }
 
     if (type) where.type = type
     if (normalizedCategoryId) where.categoryId = normalizedCategoryId
-    if (search) where.title = { contains: search, mode: 'insensitive' }
+    if (search) where.title = { contains: search }
 
     if (period) {
       const { start, end } = parsePeriodRange(period)
