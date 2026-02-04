@@ -49,6 +49,7 @@ type TransactionDialogProps = {
   trigger?: React.ReactNode
   className?: string
   closeOnSubmit?: boolean
+  isEditing?: boolean
   initialValues?: Partial<CreateTransactionPayload>
   title?: string
   description?: string
@@ -83,10 +84,11 @@ export const TransactionDialog = ({
   trigger,
   className,
   closeOnSubmit = true,
+  isEditing = false,
   initialValues,
-  title = 'Nova transação',
-  description = 'Registre sua despesa ou receita',
-  submitLabel = 'Salvar',
+  title,
+  description,
+  submitLabel,
   categoryOptions,
 }: TransactionDialogProps) => {
   const [type, setType] = React.useState<TransactionType>(DEFAULT_VALUES.type)
@@ -134,6 +136,14 @@ export const TransactionDialog = ({
     }
   }
 
+  const resolvedTitle = title ?? (isEditing ? 'Editar transação' : 'Nova transação')
+  const resolvedDescription =
+    description ??
+    (isEditing
+      ? 'Atualize os dados da transação'
+      : 'Registre sua despesa ou receita')
+  const resolvedSubmitLabel = submitLabel ?? (isEditing ? 'Salvar alterações' : 'Salvar')
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
@@ -143,8 +153,8 @@ export const TransactionDialog = ({
       >
         <div className="mb-2 flex items-start justify-between gap-4">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-base">{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
+            <DialogTitle className="text-base">{resolvedTitle}</DialogTitle>
+            <DialogDescription>{resolvedDescription}</DialogDescription>
           </DialogHeader>
 
           <DialogClose asChild>
@@ -228,7 +238,7 @@ export const TransactionDialog = ({
           />
 
           <Button type="submit" className="mt-2 w-full">
-            {submitLabel}
+            {resolvedSubmitLabel}
           </Button>
         </form>
       </DialogContent>
