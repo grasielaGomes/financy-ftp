@@ -9,6 +9,7 @@ import { CategoryDialog } from '@/features/categories/components/CategoryDialog'
 import { CategoryMetricCard } from '@/features/categories/components/CategoryMetricCard'
 
 import { useCategoriesPage } from '@/features/categories/hooks/useCategoriesPage'
+import { useConfirmDelete } from '@/hooks/useConfirmDelete'
 import {
   categoryIconMap,
   categoryIconTextClasses,
@@ -53,34 +54,19 @@ const renderMostUsedIcon = (
 export const CategoriesPage = () => {
   const { categories, metrics, actions, loading, error } = useCategoriesPage()
 
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingCategory, setEditingCategory] =
     useState<EditingCategory | null>(null)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [deletingCategory, setDeletingCategory] =
-    useState<DeletingCategory | null>(null)
+  const deleteConfirmation = useConfirmDelete<DeletingCategory>((category) =>
+    actions.remove(category.id),
+  )
 
   const handleEditOpenChange = (open: boolean) => {
     setIsEditOpen(open)
 
     if (!open) {
       setEditingCategory(null)
-    }
-  }
-
-  const handleDeleteOpenChange = (open: boolean) => {
-    setIsDeleteOpen(open)
-
-    if (!open) {
-      setDeletingCategory(null)
-    }
-  }
-
-  const handleConfirmDelete = async () => {
-    if (!deletingCategory) return
-    const result = await actions.remove(deletingCategory.id)
-    if (result) {
-      handleDeleteOpenChange(false)
     }
   }
 
@@ -107,8 +93,10 @@ export const CategoriesPage = () => {
         tagLabel={category.name}
         itemsCount={formatItemsCount(category.transactionsCount)}
         onDelete={() => {
-          setDeletingCategory({ id: category.id, name: category.name })
-          setIsDeleteOpen(true)
+          deleteConfirmation.requestDelete({
+            id: category.id,
+            name: category.name,
+          })
         }}
         onEdit={() => {
           setEditingCategory({
@@ -130,16 +118,17 @@ export const CategoriesPage = () => {
         title="Categorias"
         description="Organize suas transações por categorias"
         action={
-          <CategoryDialog
-            onSubmit={actions.create}
-            trigger={
-              <Button size="sm">
-                <Plus />
-                Nova categoria
-              </Button>
-            }
-          />
+          <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+            <Plus />
+            Nova categoria
+          </Button>
         }
+      />
+
+      <CategoryDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSubmit={actions.create}
       />
 
       <CategoryDialog
@@ -149,10 +138,8 @@ export const CategoriesPage = () => {
           if (!editingCategory) return Promise.resolve(false)
           return actions.update({ id: editingCategory.id, ...payload })
         }}
+        isEditing
         closeOnSubmit
-        title="Editar categoria"
-        description="Atualize os dados da categoria"
-        submitLabel="Salvar alterações"
         initialValues={
           editingCategory
             ? {
@@ -165,20 +152,22 @@ export const CategoriesPage = () => {
         }
       />
       <ConfirmDialog
-        open={isDeleteOpen}
-        onOpenChange={handleDeleteOpenChange}
+        open={deleteConfirmation.open}
+        onOpenChange={deleteConfirmation.onOpenChange}
         title="Excluir categoria"
         description={
           <>
             Tem certeza que deseja excluir a categoria
-            {deletingCategory ? ` “${deletingCategory.name}”` : ''}? Todas as
-            transações associadas a essa categoria perderão os vínculos a essa
-            categoria. Essa ação não pode ser desfeita.
+            {deleteConfirmation.item
+              ? ` “${deleteConfirmation.item.name}”`
+              : ''}
+            ? Todas as transações associadas a essa categoria perderão os
+            vínculos a essa categoria. Essa ação não pode ser desfeita.
           </>
         }
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
-        onConfirm={handleConfirmDelete}
+        onConfirm={deleteConfirmation.onConfirm}
       />
 
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
