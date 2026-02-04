@@ -1,29 +1,121 @@
-import { Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
+import { useQuery } from '@apollo/client/react'
+import { ArrowDownCircle, ArrowUpCircle, Wallet } from 'lucide-react'
 
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { CATEGORIES_QUERY } from '@/features/categories/api/categories.gql'
+import { CategoriesSummaryCard } from '@/features/dashboard/components/CategoriesSummaryCard'
+import { RecentTransactionsCard } from '@/features/dashboard/components/RecentTransactionsCard'
+import { useDashboardPage } from '@/features/dashboard/hooks/useDashboardPage'
 import { MetricCard } from '@/features/transactions/components/MetricCard'
+import { TransactionDialog } from '@/features/transactions/components/TransactionDialog'
+import { useTransactionDialogState } from '@/features/transactions/hooks/useTransactionDialogState'
+import { useTransactionMutations } from '@/features/transactions/hooks/useTransactionMutations'
+import type { CategoriesQueryData } from '@/features/transactions/hooks/transactionsPage.types'
+
+const RECENT_LIMIT = 5
 
 export const DashboardPage = () => {
+  const {
+    metrics,
+    recentTransactions,
+    categoriesSummary,
+    loading,
+    error,
+    actions,
+    helpers,
+  } = useDashboardPage()
+  const categoriesQuery = useQuery<CategoriesQueryData>(CATEGORIES_QUERY)
+  const transactionMutations = useTransactionMutations({
+    page: 1,
+    perPage: RECENT_LIMIT,
+  })
+
+  const categoryOptions = useMemo(() => {
+    const items = categoriesQuery.data?.categories ?? []
+    return items.map((category) => ({
+      value: category.id,
+      label: category.name,
+    }))
+  }, [categoriesQuery.data])
+
+  const transactionDialog = useTransactionDialogState([], async (payload) => {
+    const didSave = await transactionMutations.submitTransaction(payload, null)
+
+    if (didSave) {
+      await actions.refetch()
+    }
+
+    return didSave
+  })
+  const { openCreateDialog } = transactionDialog
+
+  const handleCreateTransaction = useCallback(() => {
+    openCreateDialog()
+  }, [openCreateDialog])
+
+  if (error.hasError && !loading.initial) {
+    return (
+      <main className="page">
+        <Card className="flex flex-col items-center gap-4 px-4 py-10 text-center sm:px-6">
+          <p className="text-sm text-danger">
+            Não foi possível carregar os dados do dashboard.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => actions.refetch()}>
+            Tentar novamente
+          </Button>
+        </Card>
+      </main>
+    )
+  }
+
   return (
-    <main className="w-full">
-      <div className="mx-auto w-full max-w-6xl px-4 py-6">
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <main className="page flex flex-col gap-4">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <MetricCard
             icon={<Wallet className="text-purple-base" />}
             label="Saldo total"
-            value="R$ 12.847,32"
+            value={metrics.balanceTotal}
           />
           <MetricCard
             icon={<ArrowUpCircle className="text-green-base" />}
             label="Receitas do mês"
-            value="R$ 4.250,00"
+            value={metrics.monthIncome}
           />
-          <MetricCard
-            icon={<ArrowDownCircle className="text-red-base" />}
-            label="Despesas do mês"
-            value="R$ 2.180,45"
-          />
-        </section>
-      </div>
+        </div>
+        <MetricCard
+          icon={<ArrowDownCircle className="text-red-base" />}
+          label="Despesas do mês"
+          value={metrics.monthExpense}
+        />
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+        <RecentTransactionsCard
+          transactions={recentTransactions}
+          isLoading={
+            loading.recentTransactions && recentTransactions.length === 0
+          }
+          onCreateTransaction={handleCreateTransaction}
+        />
+
+        <CategoriesSummaryCard
+          categories={categoriesSummary}
+          isLoading={loading.summary && categoriesSummary.length === 0}
+          formatItemsCount={helpers.formatItemsCount}
+        />
+      </section>
+
+      <TransactionDialog
+        open={transactionDialog.open}
+        onOpenChange={transactionDialog.setOpen}
+        onSubmit={transactionDialog.onSubmit}
+        isEditing={transactionDialog.isEditing}
+        initialValues={transactionDialog.initialValues}
+        categoryOptions={categoryOptions}
+      />
     </main>
   )
 }
