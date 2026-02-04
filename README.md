@@ -9,27 +9,26 @@ A full-stack personal finance management application composed of:
 
 ### Core features (Backend + Frontend)
 
-- [ ] Users can sign up and sign in
-- [ ] Users can only manage their own transactions and categories (multi-tenant)
-- [ ] Create a transaction
-- [ ] Edit a transaction
-- [ ] Delete a transaction
-- [ ] List all transactions
-- [ ] Create a category
-- [ ] Edit a category
-- [ ] Delete a category
-- [ ] List all categories
+- [x] Users can sign up and sign in
+- [x] Users can only manage their own transactions and categories (multi-tenant)
+- [x] Create a transaction
+- [x] Edit a transaction
+- [x] Delete a transaction
+- [x] List all transactions
+- [x] Create a category
+- [x] Edit a category
+- [x] Delete a category
+- [x] List all categories
 
 ### Frontend rules
 
-- [ ] Built with **React + TypeScript**
-- [ ] Uses **Vite** as the bundler (no framework)
-- [ ] Uses **GraphQL** to query the API
-- [ ] Matches the **Figma** layout as closely as possible
-- [ ] App has **6 pages** and **2 form modals (Dialogs)**
-- [ ] `frontend/.env.example` exists with:
-
-  - [ ] `VITE_BACKEND_URL=`
+- [x] Built with **React + TypeScript**
+- [x] Uses **Vite** as the bundler (no framework)
+- [x] Uses **GraphQL** to query the API
+- [x] Matches the **Figma** layout as closely as possible
+- [x] App has **6 pages** and **2 form modals (Dialogs)**
+- [x] `frontend/.env.example` exists with:
+  - [x] `VITE_BACKEND_URL=`
 
 ### Backend rules
 
@@ -37,7 +36,6 @@ A full-stack personal finance management application composed of:
 - [x] Uses **SQLite** (Postgres is allowed as an alternative)
 - [x] CORS is enabled
 - [x] `backend/.env.example` exists with:
-
   - [x] `JWT_SECRET=`
   - [x] `DATABASE_URL=`
   - [x] Any additional env vars are also documented
@@ -101,16 +99,12 @@ pnpm run dev
 ## Pages & dialogs
 
 - `/`
-
   - Shows **Login** when logged out
   - Shows **Dashboard** when logged in
 
-> Fill in the remaining pages and dialogs with the final names/routes:
-
-- [ ] Page 2:
-- [ ] Page 3:
-- [ ] Page 4:
-- [ ] Page 5:
-- [ ] Page 6:
-- [ ] Dialog 1 (form):
-- [ ] Dialog 2 (form):
+- [x] AuthPage: /
+- [x] DashboardPage: /
+- [x] CategoriesPage: /categories
+- [x] TransactionsPage: /transactions
+- [x] ProfilePage: /profile
+- [x] NotFoundPage: \*
