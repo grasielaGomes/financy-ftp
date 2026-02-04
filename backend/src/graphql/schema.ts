@@ -5,6 +5,7 @@ import {
   transactionsTypeDefs,
   transactionsResolvers,
 } from '@/modules/transactions'
+import { dashboardResolvers, dashboardTypeDefs } from '@/modules/dashboard'
 
 const baseTypeDefs = /* GraphQL */ `
   type Query {
@@ -29,11 +30,13 @@ export const schema = createSchema({
     authTypeDefs,
     categoriesTypeDefs,
     transactionsTypeDefs,
+    dashboardTypeDefs,
   ],
   resolvers: [
     baseResolvers,
     authResolvers,
     categoriesResolvers,
     transactionsResolvers,
+    dashboardResolvers,
   ],
 })
