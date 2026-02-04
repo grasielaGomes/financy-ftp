@@ -4,15 +4,19 @@ import { ArrowDownCircle, ArrowUpCircle, Wallet } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { CATEGORIES_QUERY } from '@/features/categories/api/categories.gql'
-import { CategoriesSummaryCard } from '@/features/dashboard/components/CategoriesSummaryCard'
-import { RecentTransactionsCard } from '@/features/dashboard/components/RecentTransactionsCard'
-import { useDashboardPage } from '@/features/dashboard/hooks/useDashboardPage'
-import { MetricCard } from '@/features/transactions/components/MetricCard'
-import { TransactionDialog } from '@/features/transactions/components/TransactionDialog'
-import { useTransactionDialogState } from '@/features/transactions/hooks/useTransactionDialogState'
-import { useTransactionMutations } from '@/features/transactions/hooks/useTransactionMutations'
-import type { CategoriesQueryData } from '@/features/transactions/hooks/transactionsPage.types'
+import { CATEGORIES_QUERY } from '@/features/categories'
+import {
+  CategoriesSummaryCard,
+  RecentTransactionsCard,
+  useDashboardPage,
+} from '@/features/dashboard'
+import {
+  MetricCard,
+  TransactionDialog,
+  useTransactionDialogState,
+  useTransactionMutations,
+  type CategoriesQueryData,
+} from '@/features/transactions'
 
 const RECENT_LIMIT = 5
 

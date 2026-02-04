@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 
-import { AuthShell } from '@/features/auth/components/AuthShell'
-import { LoginForm } from '@/features/auth/components/LoginForm'
-import { SignupForm } from '@/features/auth/components/SignupForm'
+import { AuthShell, LoginForm, SignupForm } from '@/features/auth'
 import { useToken } from '@/lib/storage/token'
 
 type Mode = 'login' | 'signup'

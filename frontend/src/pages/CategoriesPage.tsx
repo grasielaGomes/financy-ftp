@@ -4,19 +4,18 @@ import { ArrowUpDown, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { CategoryCard } from '@/features/categories/components/CategoryCard'
-import { CategoryDialog } from '@/features/categories/components/CategoryDialog'
-import { CategoryMetricCard } from '@/features/categories/components/CategoryMetricCard'
-
-import { useCategoriesPage } from '@/features/categories/hooks/useCategoriesPage'
-import { useConfirmDelete } from '@/hooks/useConfirmDelete'
 import {
+  CategoryCard,
+  CategoryDialog,
+  CategoryMetricCard,
   categoryIconMap,
   categoryIconTextClasses,
   MostUsedFallbackIcon,
+  useCategoriesPage,
   type CategoryColorKey,
   type CategoryIconKey,
-} from '@/features/categories/helpers/categoryOptions'
+} from '@/features/categories'
+import { useConfirmDelete } from '@/hooks/useConfirmDelete'
 
 type EditingCategory = {
   id: string

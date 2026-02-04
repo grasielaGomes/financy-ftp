@@ -6,10 +6,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Separator } from '@/components/ui/Separator'
 import { TextField } from '@/components/ui/TextField'
-
-import { useMe } from '@/features/auth/hooks/useMe'
-import { useLogout } from '@/features/auth/hooks/useLogout'
-import { useUpdateProfile } from '@/features/auth/hooks/useUpdateProfile'
+import { useLogout, useMe, useUpdateProfile } from '@/features/auth'
 
 import { getInitials } from '@/utils/format'
 import { showErrorToast } from '@/lib/toast'

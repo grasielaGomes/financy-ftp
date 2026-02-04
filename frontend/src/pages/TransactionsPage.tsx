@@ -5,19 +5,18 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
-import { TransactionsFilters } from '@/features/transactions/components/TransactionsFilters'
-import { TransactionsEmptyState } from '@/features/transactions/components/TransactionsEmptyState'
-import { TransactionsErrorState } from '@/features/transactions/components/TransactionsErrorState'
 import {
+  TransactionDialog,
+  TransactionTable,
+  TransactionsEmptyState,
+  TransactionsErrorState,
+  TransactionsFilters,
   TransactionsFiltersSkeleton,
   TransactionsTableSkeleton,
-} from '@/features/transactions/components/TransactionsSkeletons'
-import {
-  TransactionTable,
+  useDebouncedValue,
+  useTransactionsPage,
   type TransactionRow,
-} from '@/features/transactions/components/TransactionTable'
-import { TransactionDialog } from '@/features/transactions/components/TransactionDialog'
-import { useDebouncedValue, useTransactionsPage } from '@/features/transactions/hooks'
+} from '@/features/transactions'
 import { useConfirmDelete } from '@/hooks/useConfirmDelete'
 
 const PER_PAGE = 10
