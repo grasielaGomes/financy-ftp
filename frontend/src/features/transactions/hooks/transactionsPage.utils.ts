@@ -26,6 +26,9 @@ export const normalizeCurrencyToFloat = (raw: string): number | null => {
   return parsed
 }
 
+export const normalizeSearchTerm = (raw: string): string =>
+  raw.trim().replace(/\s+/g, ' ')
+
 export const formatCurrencyBRL = (value: number): string => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -80,7 +83,7 @@ export const buildTransactionsInput = (
   const normalizedCategoryId =
     filters.categoryId === 'all' ? undefined : filters.categoryId
 
-  const search = filters.search.trim()
+  const search = normalizeSearchTerm(filters.search)
   const period = filters.period.trim()
 
   if (search !== '') input.search = search
