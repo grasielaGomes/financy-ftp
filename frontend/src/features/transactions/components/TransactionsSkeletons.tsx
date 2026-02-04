@@ -1,5 +1,7 @@
 import { Card } from '@/components/ui/Card'
 
+const TABLE_SKELETON_ROW_COUNT = 6
+
 export const TransactionsFiltersSkeleton = () => {
   return (
     <Card className="py-5 px-6">
@@ -34,7 +36,7 @@ export const TransactionsTableSkeleton = () => {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: TABLE_SKELETON_ROW_COUNT }).map((_, i) => (
             <div key={i} className="px-6 py-5 flex items-center gap-4">
               <div className="h-10 w-10 rounded-full bg-gray-100" />
               <div className="flex-1">
