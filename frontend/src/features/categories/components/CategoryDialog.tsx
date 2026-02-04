@@ -41,6 +41,7 @@ type CategoryDialogProps = {
   trigger?: React.ReactNode
   className?: string
   closeOnSubmit?: boolean
+  isEditing?: boolean
   initialValues?: Partial<CreateCategoryPayload>
   title?: string
   description?: string
@@ -54,10 +55,11 @@ export const CategoryDialog = ({
   trigger,
   className,
   closeOnSubmit = true,
+  isEditing = false,
   initialValues,
-  title = 'Nova categoria',
-  description = 'Organize suas transações com categorias',
-  submitLabel = 'Salvar',
+  title,
+  description,
+  submitLabel,
 }: CategoryDialogProps) => {
   const [name, setName] = React.useState(DEFAULT_VALUES.name)
   const [descriptionValue, setDescriptionValue] = React.useState(
@@ -96,13 +98,21 @@ export const CategoryDialog = ({
 
     const shouldClose = closeOnSubmit && result !== false
     if (shouldClose) {
-      setName('')
-      setDescriptionValue('')
-      setIconKey('shopping-cart')
-      setColorKey('green')
+      setName(DEFAULT_VALUES.name)
+      setDescriptionValue(DEFAULT_VALUES.description)
+      setIconKey(DEFAULT_VALUES.iconKey)
+      setColorKey(DEFAULT_VALUES.colorKey)
       onOpenChange?.(false)
     }
   }
+
+  const resolvedTitle = title ?? (isEditing ? 'Editar categoria' : 'Nova categoria')
+  const resolvedDescription =
+    description ??
+    (isEditing
+      ? 'Atualize os dados da categoria'
+      : 'Organize suas transações com categorias')
+  const resolvedSubmitLabel = submitLabel ?? (isEditing ? 'Salvar alterações' : 'Salvar')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -113,8 +123,8 @@ export const CategoryDialog = ({
       >
         <div className="flex items-start justify-between gap-4 mb-2">
           <DialogHeader className="gap-1">
-            <DialogTitle className="text-base">{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
+            <DialogTitle className="text-base">{resolvedTitle}</DialogTitle>
+            <DialogDescription>{resolvedDescription}</DialogDescription>
           </DialogHeader>
           <DialogClose asChild>
             <Button
@@ -207,7 +217,7 @@ export const CategoryDialog = ({
           </div>
 
           <Button type="submit" className="mt-2 w-full">
-            {submitLabel}
+            {resolvedSubmitLabel}
           </Button>
         </form>
       </DialogContent>
