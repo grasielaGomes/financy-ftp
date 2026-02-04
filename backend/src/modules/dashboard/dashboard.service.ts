@@ -92,7 +92,7 @@ export const dashboardService = {
     // 3) Recent transactions (all-time)
     const recentTransactions = await prisma.transaction.findMany({
       where: { userId },
-      orderBy: { occurredAt: 'desc' },
+      orderBy: [{ occurredAt: 'desc' }, { createdAt: 'desc' }],
       take: recentLimit,
       select: {
         id: true,

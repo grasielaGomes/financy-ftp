@@ -174,7 +174,7 @@ export const transactionsService = {
       prisma.transaction.count({ where }),
       prisma.transaction.findMany({
         where,
-        orderBy: { occurredAt: 'desc' },
+        orderBy: [{ occurredAt: 'desc' }, { createdAt: 'desc' }],
         skip: (page - 1) * perPage,
         take: perPage,
         select: {
