@@ -1,8 +1,9 @@
-import { useCallback, ReactNode } from 'react'
+import { useCallback, type ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 import { TransactionsFilters } from '@/features/transactions/components/TransactionsFilters'
 import { TransactionsEmptyState } from '@/features/transactions/components/TransactionsEmptyState'
@@ -11,10 +12,13 @@ import {
   TransactionsFiltersSkeleton,
   TransactionsTableSkeleton,
 } from '@/features/transactions/components/TransactionsSkeletons'
-import { TransactionTable } from '@/features/transactions/components/TransactionTable'
+import {
+  TransactionTable,
+  type TransactionRow,
+} from '@/features/transactions/components/TransactionTable'
 import { TransactionDialog } from '@/features/transactions/components/TransactionDialog'
-import { useDebouncedValue } from '@/features/transactions/hooks/useDebouncedValue'
-import { useTransactionsPage } from '@/features/transactions/hooks/useTransactionsPage'
+import { useDebouncedValue, useTransactionsPage } from '@/features/transactions/hooks'
+import { useConfirmDelete } from '@/hooks/useConfirmDelete'
 
 const PER_PAGE = 10
 const SEARCH_DEBOUNCE_MS = 350
@@ -22,20 +26,9 @@ const SEARCH_DEBOUNCE_MS = 350
 export const TransactionsPage = () => {
   const {
     filters,
-    setSearch,
-    setType,
-    setCategoryId,
-    setPeriod,
-
-    page,
-    totalPages,
-    paginationLabel,
-    goToPage,
-
-    categoryOptions,
-    periodOptions,
-
-    rows,
+    pagination,
+    options,
+    table,
 
     dialog,
 
@@ -47,11 +40,14 @@ export const TransactionsPage = () => {
   const [searchDraft, setSearchDraft] = useDebouncedValue({
     value: filters.search,
     delay: SEARCH_DEBOUNCE_MS,
-    onChange: setSearch,
+    onChange: filters.setSearch,
   })
+  const deleteConfirmation = useConfirmDelete<
+    Pick<TransactionRow, 'id' | 'description'>
+  >((transaction) => actions.remove(transaction.id))
 
   const isInitialLoading =
-    (loading.periods || loading.categories) && rows.length === 0
+    (loading.periods || loading.categories) && table.rows.length === 0
   const isLoadingTransactions = loading.transactions
 
   const hasError = Boolean(
@@ -63,13 +59,19 @@ export const TransactionsPage = () => {
   }, [actions])
 
   const handleTypeChange = useCallback(
-    (value: string) => setType(value as typeof filters.type),
-    [setType, filters.type],
+    (value: string) => filters.setType(value as typeof filters.type),
+    [filters],
   )
 
-  const handlePrevPage = useCallback(() => goToPage(page - 1), [goToPage, page])
+  const handlePrevPage = useCallback(
+    () => pagination.goToPage(pagination.page - 1),
+    [pagination],
+  )
 
-  const handleNextPage = useCallback(() => goToPage(page + 1), [goToPage, page])
+  const handleNextPage = useCallback(
+    () => pagination.goToPage(pagination.page + 1),
+    [pagination],
+  )
 
   const handleEdit = useCallback(
     (id: string) => dialog.openEditDialog(id),
@@ -77,8 +79,10 @@ export const TransactionsPage = () => {
   )
 
   const handleDelete = useCallback(
-    (id: string) => actions.remove(id),
-    [actions],
+    (transaction: Pick<TransactionRow, 'id' | 'description'>) => {
+      deleteConfirmation.requestDelete(transaction)
+    },
+    [deleteConfirmation],
   )
 
   const handleCreate = useCallback(() => dialog.openCreateDialog(), [dialog])
@@ -87,20 +91,20 @@ export const TransactionsPage = () => {
 
   if (hasError) {
     content = <TransactionsErrorState onRetry={handleRetry} />
-  } else if (isLoadingTransactions && rows.length === 0) {
+  } else if (isLoadingTransactions && table.rows.length === 0) {
     content = <TransactionsTableSkeleton />
-  } else if (rows.length === 0) {
+  } else if (table.rows.length === 0) {
     content = <TransactionsEmptyState onCreate={handleCreate} />
   } else {
     content = (
       <TransactionTable
-        rows={rows}
-        paginationLabel={paginationLabel}
-        page={page}
-        totalPages={totalPages}
+        rows={table.rows}
+        paginationLabel={pagination.paginationLabel}
+        page={pagination.page}
+        totalPages={pagination.totalPages}
         onPrevPage={handlePrevPage}
         onNextPage={handleNextPage}
-        onGoToPage={goToPage}
+        onGoToPage={pagination.goToPage}
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoadingTransactions}
@@ -114,26 +118,10 @@ export const TransactionsPage = () => {
         title="Transações"
         description="Gerencie todas as suas transações financeiras"
         action={
-          <TransactionDialog
-            open={dialog.open}
-            onOpenChange={dialog.setOpen}
-            onSubmit={dialog.onSubmit}
-            initialValues={dialog.initialValues}
-            title={dialog.isEditing ? 'Editar transação' : 'Nova transação'}
-            description={
-              dialog.isEditing
-                ? 'Atualize os dados da transação'
-                : 'Registre sua despesa ou receita'
-            }
-            submitLabel={dialog.isEditing ? 'Salvar alterações' : 'Salvar'}
-            categoryOptions={categoryOptions}
-            trigger={
-              <Button size="sm" onClick={dialog.openCreateDialog}>
-                <Plus />
-                Nova transação
-              </Button>
-            }
-          />
+          <Button size="sm" onClick={dialog.openCreateDialog}>
+            <Plus />
+            Nova transação
+          </Button>
         }
       />
 
@@ -146,17 +134,44 @@ export const TransactionsPage = () => {
           type={filters.type}
           onTypeChange={handleTypeChange}
           categoryId={filters.categoryId}
-          onCategoryChange={setCategoryId}
+          onCategoryChange={filters.setCategoryId}
           period={filters.period}
-          onPeriodChange={setPeriod}
-          categoryOptions={categoryOptions}
-          periodOptions={periodOptions}
+          onPeriodChange={filters.setPeriod}
+          categoryOptions={options.categoryOptions}
+          periodOptions={options.periodOptions}
           isLoading={isLoadingTransactions}
           isPeriodsLoading={loading.periods}
         />
       )}
 
       {content}
+
+      <TransactionDialog
+        open={dialog.open}
+        onOpenChange={dialog.setOpen}
+        onSubmit={dialog.onSubmit}
+        isEditing={dialog.isEditing}
+        initialValues={dialog.initialValues}
+        categoryOptions={options.categoryOptions}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmation.open}
+        onOpenChange={deleteConfirmation.onOpenChange}
+        title="Excluir transação"
+        description={
+          <>
+            Tem certeza que deseja excluir a transação
+            {deleteConfirmation.item
+              ? ` “${deleteConfirmation.item.description}”`
+              : ''}
+            ? Essa ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        onConfirm={deleteConfirmation.onConfirm}
+      />
     </main>
   )
 }
