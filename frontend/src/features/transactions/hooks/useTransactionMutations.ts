@@ -11,6 +11,7 @@ import {
   DELETE_TRANSACTION_MUTATION,
 } from '@/features/transactions/api/transactions.gql'
 import { CATEGORIES_QUERY } from '@/features/categories/api/categories.gql'
+import { DASHBOARD_SUMMARY_QUERY } from '@/features/dashboard/api/dashboard.gql'
 
 import type { TransactionType } from '@financy/contracts'
 
@@ -23,10 +24,20 @@ import type {
   TransactionsQueryInput,
 } from './transactionsPage.types'
 
+const DASHBOARD_RECENT_TRANSACTIONS_INPUT: TransactionsQueryInput = {
+  page: 1,
+  perPage: 5,
+}
+
 export const useTransactionMutations = (transactionsInput: TransactionsQueryInput) => {
   const refetchAfterTransaction = useMemo<RefetchQuery[]>(() => {
     return [
       { query: TRANSACTIONS_QUERY, variables: { input: transactionsInput } },
+      {
+        query: TRANSACTIONS_QUERY,
+        variables: { input: DASHBOARD_RECENT_TRANSACTIONS_INPUT },
+      },
+      { query: DASHBOARD_SUMMARY_QUERY },
       { query: TRANSACTION_PERIODS_QUERY },
       { query: CATEGORIES_QUERY },
     ]
