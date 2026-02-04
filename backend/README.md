@@ -53,6 +53,14 @@ This is the **backend** for the Financy project: a finance management API built 
 
 ### 1. Install Dependencies
 
+From repo root (recommended):
+
+```bash
+pnpm install
+```
+
+Or from this folder:
+
 ```bash
 pnpm install
 ```
@@ -66,6 +74,7 @@ Create a `.env` file based on `.env.example`.
 ```bash
 JWT_SECRET=
 DATABASE_URL=
+PORT=4000
 ```
 
 #### Example for SQLite:
@@ -110,6 +119,12 @@ http://localhost:4000/graphql (default)
 ```
 
 You can change the port using `PORT` in `.env`.
+
+If you are running from workspace root:
+
+```bash
+pnpm --filter financy-backend dev
+```
 
 ---
 

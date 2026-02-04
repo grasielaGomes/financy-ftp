@@ -4,6 +4,7 @@ A full-stack personal finance management application composed of:
 
 - **Backend** (`/backend`): TypeScript + GraphQL + Prisma + SQLite API
 - **Frontend** (`/frontend`): React + TypeScript + Vite + GraphQL SPA
+- **Contracts** (`/contracts`): shared types/constants used by backend and frontend
 
 ## Requirements checklist
 
@@ -40,60 +41,68 @@ A full-stack personal finance management application composed of:
   - [x] `DATABASE_URL=`
   - [x] Any additional env vars are also documented
 
-## Getting Started
+## Running The Full App Locally
+
+### 1. Clone and install workspace dependencies
 
 ```bash
 git clone https://github.com/grasielaGomes/financy-ftp.git
 cd financy-ftp
-```
-
-## Backend setup (`/backend`)
-
-1. Install dependencies
-
-```bash
-cd backend
 pnpm install
 ```
 
-2. Create your `.env` from `.env.example`
+### 2. Configure environment variables
+
+Create these files from the examples:
 
 ```bash
-# backend/.env.example (required)
-JWT_SECRET=
-DATABASE_URL=
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
-3. Run Prisma and start the server
+Expected defaults:
 
-```bash
-npx prisma generate
-npx prisma migrate dev
-pnpm run dev
+```env
+# backend/.env
+JWT_SECRET=your-secret-here
+DATABASE_URL="file:./prisma/dev.db"
+PORT=4000
 ```
 
-> Make sure CORS is enabled in the backend.
-
-## Frontend setup (`/frontend`)
-
-1. Install dependencies
-
-```bash
-cd frontend
-pnpm install
+```env
+# frontend/.env
+VITE_BACKEND_URL=http://localhost:4000/graphql
 ```
 
-2. Create your `.env` from `.env.example`
+### 3. Run database migrations
+
+For first run:
 
 ```bash
-# frontend/.env.example (required)
-VITE_BACKEND_URL=
+pnpm --filter financy-backend db:migrate:init
 ```
 
-3. Start the app
+For subsequent runs:
 
 ```bash
-pnpm run dev
+pnpm --filter financy-backend db:migrate
+```
+
+### 4. Start backend + frontend + contracts watcher
+
+```bash
+pnpm dev
+```
+
+This starts the full workspace in parallel:
+- Backend: `http://localhost:4000/graphql`
+- Frontend: `http://localhost:5173`
+
+## Running Packages Separately (Optional)
+
+```bash
+pnpm dev:backend
+pnpm dev:frontend
 ```
 
 ## Pages & dialogs
